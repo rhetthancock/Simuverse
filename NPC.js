@@ -31,7 +31,7 @@ class NPC {
         }
     }
     update() {
-        this.seek(player);
+        this.seek(sim.player);
         // this.x += (Math.random() * 2 - 1) * this.speed;
         // this.y += (Math.random() * 2 - 1) * this.speed;
     }
