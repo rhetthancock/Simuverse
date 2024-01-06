@@ -35,8 +35,8 @@ class Simulation {
             }
         });
     }
-    gameLoop() {
-        requestAnimationFrame(() => this.gameLoop());
+    simLoop() {
+        requestAnimationFrame(() => this.simLoop());
         this.update();
         this.render();
     }

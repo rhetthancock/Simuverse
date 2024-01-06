@@ -3,7 +3,7 @@ function main() {
     const canvas = document.getElementById('sv_canvas');
     sim = new Simulation(canvas);
     setupEventListeners(sim);
-    sim.gameLoop();
+    sim.simLoop();
 }
 
 function setupEventListeners(sim) {
