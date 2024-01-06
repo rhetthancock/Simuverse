@@ -1,6 +1,5 @@
 :root {
     --background-color: #000;
-    --foreground-color: green;
 }
 body {
     background-color: var(--background-color);
