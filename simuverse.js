@@ -11,15 +11,21 @@ function gameLoop() {
 function render() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    player.draw(context);
-    for (let npc of npcs) {
-        npc.draw(context);
+    for(let zone of zones) {
+        context.fillStyle = zone.color;
+        context.fillRect(zone.x, zone.y, zone.width, zone.height);
     }
 
     for (let resource of resources) {
         context.fillStyle = resource.color;
         context.fillRect(resource.x, resource.y, resource.size, resource.size);
     }
+
+    for (let npc of npcs) {
+        npc.draw(context);
+    }
+
+    player.draw(context);
 
     context.font = "10px monospace";
     context.fillStyle = '#fff';
@@ -31,6 +37,7 @@ function render() {
 
 function update() {
     movePlayer();
+    applyZoneEffects();
     npcs.forEach(npc => {
         npc.update();
         npc.interactWithOtherNPCs(npcs);
@@ -110,7 +117,7 @@ function spawnResource() {
 }
 
 let zones = [
-    { x: 100, y: 100, width: 200, height: 200, effect: 'slow' }
+    { x: 100, y: 100, width: 200, height: 200, effect: 'slow', color: '#222222' }
     // Add more zones as needed
 ];
 
@@ -120,7 +127,7 @@ function applyZoneEffects() {
             if (isInZone(npc, zone)) {
                 // Apply the effect based on the zone type
                 if (zone.effect === 'slow') {
-                    npc.speed *= 0.5; // Slow down the NPC
+                    npc.speed = 0.5; // Slow down the NPC
                 }
             }
         });
