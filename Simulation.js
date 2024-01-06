@@ -132,7 +132,7 @@ class Simulation {
         this.movePlayer();
         this.applyZoneEffects();
         this.npcs.forEach(npc => {
-            npc.update();
+            npc.update(this.npcs);
             npc.interactWithOtherNPCs(this.npcs);
         });
         this.checkInteractions();
