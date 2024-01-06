@@ -4,7 +4,7 @@ class Player {
         this.y = y;
         this.color = '#00ff00';
         this.size = 20;
-        this.speed = 1;
+        this.speed = 2;
     }
     draw(context) {
         context.fillStyle = this.color;

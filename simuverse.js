@@ -1,4 +1,5 @@
 let canvas, context, frames = 0;
+let resources = [];
 let keysPressed = {};
 
 function gameLoop() {
@@ -15,6 +16,11 @@ function render() {
         npc.draw(context);
     }
 
+    for (let resource of resources) {
+        context.fillStyle = resource.color;
+        context.fillRect(resource.x, resource.y, resource.size, resource.size);
+    }
+
     context.font = "10px monospace";
     context.fillStyle = '#fff';
     context.fillText(`Frames: ${frames}`, 5, 10);
@@ -25,7 +31,10 @@ function render() {
 
 function update() {
     movePlayer();
-    npcs.forEach(npc => npc.update());
+    npcs.forEach(npc => {
+        npc.update();
+        npc.interactWithOtherNPCs(npcs);
+    });
     checkInteractions();
 }
 
@@ -70,6 +79,7 @@ function main() {
 
     for (let i = 0; i < 10; i++) {
         let npc = new NPC(Math.random() * canvas.width, Math.random() * canvas.height);
+        spawnResource();
         npcs.push(npc);
     }
 
@@ -77,11 +87,21 @@ function main() {
 }
 
 function movePlayer() {
-    const speed = 5; // Adjust the speed as needed
+    const speed = player.speed;
     if (keysPressed['ArrowUp']) player.move(0, -speed);
     if (keysPressed['ArrowDown']) player.move(0, speed);
     if (keysPressed['ArrowLeft']) player.move(-speed, 0);
     if (keysPressed['ArrowRight']) player.move(speed, 0);
+}
+
+function spawnResource() {
+    let resource = {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 10,
+        color: '#00ffff'
+    };
+    resources.push(resource);
 }
 
 window.addEventListener('DOMContentLoaded', main);
