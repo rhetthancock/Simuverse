@@ -1,0 +1,19 @@
+:root {
+    --background-color: #000;
+    --foreground-color: green;
+}
+body {
+    background-color: var(--background-color);
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    width: 100%;
+}
+html {
+    height: 100%;
+    width: 100%;
+}
+#sv_canvas {
+    height: 100%;
+    width: 100%;
+}
