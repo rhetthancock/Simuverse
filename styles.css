@@ -12,3 +12,8 @@ html {
     height: 100%;
     width: 100%;
 }
+.sv_controls {
+    position: absolute;
+    right: 0;
+    top: 0;
+}

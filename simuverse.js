@@ -75,6 +75,11 @@ function main() {
     window.addEventListener('keyup', handleKeyUp);
     handleResize();
 
+    document.getElementById('sv_button_addNPC').addEventListener('click', () => {
+        let npc = new NPC(Math.random() * canvas.width, Math.random() * canvas.height);
+        npcs.push(npc);
+    });
+
     player = new Player(50, 50);
 
     for (let i = 0; i < 10; i++) {
@@ -102,6 +107,29 @@ function spawnResource() {
         color: '#00ffff'
     };
     resources.push(resource);
+}
+
+let zones = [
+    { x: 100, y: 100, width: 200, height: 200, effect: 'slow' }
+    // Add more zones as needed
+];
+
+function applyZoneEffects() {
+    for (let zone of zones) {
+        npcs.forEach(npc => {
+            if (isInZone(npc, zone)) {
+                // Apply the effect based on the zone type
+                if (zone.effect === 'slow') {
+                    npc.speed *= 0.5; // Slow down the NPC
+                }
+            }
+        });
+    }
+}
+
+function isInZone(entity, zone) {
+    return entity.x > zone.x && entity.x < zone.x + zone.width &&
+           entity.y > zone.y && entity.y < zone.y + zone.height;
 }
 
 window.addEventListener('DOMContentLoaded', main);
