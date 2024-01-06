@@ -54,6 +54,11 @@ class Simulation {
         this.canvas.height = window.innerHeight;
         this.canvas.width = window.innerWidth;
     }
+    loadState(stateString) {
+        const state = JSON.parse(stateString);
+        this.npcs = state.npcs;
+        this.resources = state.resources;
+    }
     movePlayer() {
         const speed = this.player.speed;
         if (this.keysPressed['ArrowUp']) this.player.move(0, -speed);
@@ -99,6 +104,14 @@ class Simulation {
         context.fillStyle = "#0c0";
         context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
         context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
+    }
+    saveState() {
+        const state = {
+            npcs: this.npcs,
+            resources: this.resources,
+        };
+        const stateString = JSON.stringify(state);
+        alert(stateString);
     }
     spawnNPC() {
         let npc = new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height);
