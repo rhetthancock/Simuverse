@@ -12,9 +12,13 @@ class Simulation {
         ];
         this.player = new Player(50, 50);
         this.npcs = [];
+        this.stats = {
+            totalNPCs: 0,
+            totalResources: 0
+        }
         for (let i = 0; i < 10; i++) {
             this.spawnResource();
-            this.npcs.push(new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height));
+            this.spawnNPC();
         }
     }
     applyZoneEffects() {
@@ -89,10 +93,17 @@ class Simulation {
         context.fillText(`Height: ${this.canvas.height}`, 5, 25);
         context.fillText(`Width: ${this.canvas.width}`, 5, 40);
         this.frames++;
+
+        // Render stats
+        context.font = "10px monospace";
+        context.fillStyle = "#0c0";
+        context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
+        context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
     }
     spawnNPC() {
         let npc = new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height);
         this.npcs.push(npc);
+        this.stats.totalNPCs++;
     }
     spawnResource() {
         let resource = {
@@ -102,6 +113,7 @@ class Simulation {
             color: '#00ffff'
         };
         this.resources.push(resource);
+        this.stats.totalResources++;
     }
     update() {
         this.movePlayer();

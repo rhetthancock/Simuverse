@@ -11,7 +11,7 @@ function setupEventListeners(sim) {
     window.addEventListener('keydown', (event) => sim.handleKeyDown(event));
     window.addEventListener('keyup', (event) => sim.handleKeyUp(event));
     document.getElementById('sv_button_addNPC').addEventListener('click', () => {
-        sim.addNPC();
+        sim.spawnNPC();
     });
 }
 
