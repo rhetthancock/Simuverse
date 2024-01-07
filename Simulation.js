@@ -12,7 +12,7 @@ class Simulation {
         ];
         this.dayLength = 60000; // Length of a day in milliseconds (e.g., 60 seconds)
         this.currentTime = 0;
-        this.player = new Player(50, 50);
+        this.player = new Player(this.canvas.width / 2, this.canvas.height / 2);
         this.npcs = [];
         this.stats = {
             totalNPCs: 0,
