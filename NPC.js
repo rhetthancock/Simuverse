@@ -16,6 +16,10 @@ class NPC {
             health: 100,
             energy: 100
         };
+        this.emotions = {
+            happiness: 50,
+            fear: 0,
+        };
     }
     calculateAlignment(npcs) {
         let average = { x: 0, y: 0 };

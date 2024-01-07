@@ -110,6 +110,8 @@ class Simulation {
             // Display NPC stats and inventory
             context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 60);
             context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 75);
+            context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 90);
+            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 105);
         }
     }
     saveState() {
