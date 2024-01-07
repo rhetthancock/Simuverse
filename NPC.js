@@ -21,6 +21,28 @@ class NPC {
             fear: 0,
         };
     }
+    applyFlockingBehaviors(npcs) {
+        const separationWeight = 1.5;
+        const alignmentWeight = 1.0;
+        const cohesionWeight = 1.0;
+        const maxForce = 0.05; // Lower maxForce for smoother movement
+
+        let separation = this.calculateSeparation(npcs);
+        let alignment = this.calculateAlignment(npcs);
+        let cohesion = this.calculateCohesion(npcs);
+
+        // Apply limits to forces
+        separation = this.limit(separation, maxForce);
+        alignment = this.limit(alignment, maxForce);
+        cohesion = this.limit(cohesion, maxForce);
+
+        // Combine flocking behaviors
+        this.velocity.x += separation.x * separationWeight + alignment.x * alignmentWeight + cohesion.x * cohesionWeight;
+        this.velocity.y += separation.y * separationWeight + alignment.y * alignmentWeight + cohesion.y * cohesionWeight;
+        
+        // Adjust the velocity if it's too fast
+        this.velocity = this.limit(this.velocity, this.maxSpeed);
+    }
     calculateAlignment(npcs) {
         let average = { x: 0, y: 0 };
         let total = 0;
@@ -146,6 +168,29 @@ class NPC {
             context.strokeRect(this.x, this.y, this.size, this.size);
         }
     }
+    flee(target) {
+        if (!target) return;
+
+        // Calculate the vector pointing away from the target
+        let desired = {
+            x: this.x - target.x,
+            y: this.y - target.y
+        };
+        desired = this.setMagnitude(desired, this.maxSpeed);
+
+        // Update velocity in the opposite direction of the target
+        this.velocity.x += desired.x;
+        this.velocity.y += desired.y;
+    }
+    handleEnergyAndHealth() {
+        if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+            this.stats.energy -= 0.00001; // Adjust consumption rate as needed
+        }
+
+        if (this.stats.health <= 0) {
+            this.die();
+        }
+    }
     interactWithOtherNPCs(npcs) {
         for (let other of npcs) {
             if (other !== this && other.isAlive && isColliding(this, other)) {
@@ -160,6 +205,23 @@ class NPC {
         }
         return vector;
     }
+    rest() {
+        // Set velocity to zero to make NPC stationary
+        this.velocity = { x: 0, y: 0 };
+
+        // Recover energy
+        this.stats.energy = Math.min(this.stats.energy + 1, 100); // Assuming max energy is 100
+
+        // Optionally reduce perception radius
+        // this.perceptionRadius = reducedRadius; // Set a reduced perception radius
+
+        // Check if the NPC has rested enough
+        if (this.stats.energy >= 100) { // Or another threshold
+            this.isResting = false;
+            // Restore original perception radius if reduced
+            // this.perceptionRadius = originalRadius;
+        }
+    }
     seek(target) {
         let desired = { x: target.x - this.x, y: target.y - this.y };
         desired = this.setMagnitude(desired, this.maxSpeed);
@@ -169,33 +231,35 @@ class NPC {
         let len = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
         return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
     }
-    update(npcs) {
+    update(npcs, resources, player) {
         if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
 
-        const separationWeight = 1.5;
-        const alignmentWeight = 1.0;
-        const cohesionWeight = 1.0;
-        const seekWeight = 1.0; // Adjust the weight for seeking behavior
-        const maxForce = 0.05; // Lower maxForce for smoother movement
-    
-        let separation = this.calculateSeparation(npcs);
-        let alignment = this.calculateAlignment(npcs);
-        let cohesion = this.calculateCohesion(npcs);
-        let seek = this.seek(sim.player); // Get the seek vector towards the player
-    
-        // Apply limits to forces
-        separation = this.limit(separation, maxForce);
-        alignment = this.limit(alignment, maxForce);
-        cohesion = this.limit(cohesion, maxForce);
-        seek = this.limit(seek, maxForce);
-    
-        // Combine flocking behaviors and seek behavior
-        this.velocity.x += separation.x * separationWeight + alignment.x * alignmentWeight + cohesion.x * cohesionWeight + seek.x * seekWeight;
-        this.velocity.y += separation.y * separationWeight + alignment.y * alignmentWeight + cohesion.y * cohesionWeight + seek.y * seekWeight;
-    
-        // Adjust the velocity if it's too fast
-        this.velocity = this.limit(this.velocity, this.maxSpeed);
-    
+        // Example state checks - these would need to be set based on your game logic
+        if (this.isFleeing) {
+            // Flee from a perceived threat (player, another NPC, etc.)
+            const threat = sim.player;
+            this.flee(threat); // 'threat' should be defined in your game logic
+        } else if (this.isResting) {
+            // Rest to recover energy
+            this.rest();
+        } else if (this.needsResource) {
+            // Seek out and collect resources
+            this.collectResource(resources);
+        } else {
+            // Default behavior: wandering around
+            this.wander();
+        }
+
+        // Combine flocking behaviors (separation, alignment, cohesion)
+        this.applyFlockingBehaviors(npcs);
+
+        // Update position based on velocity
+        this.updatePosition();
+
+        // Handle energy consumption and check for death
+        this.handleEnergyAndHealth();
+    }
+    updatePosition() {
         // Update the NPC's position
         let newX = this.x + this.velocity.x;
         let newY = this.y + this.velocity.y;
@@ -207,13 +271,25 @@ class NPC {
         } else {
             console.error("Invalid position calculated", this);
         }
-
-        if (this.velocity.x !== 0 || this.velocity.y !== 0) {
-            this.stats.energy -= 0.00001; // Adjust consumption rate as needed
+    }
+    wander() {
+        const wanderRadius = 50;
+        const change = Math.random() * 0.5 - 0.25; // Random change in direction
+        if (!this.target) {
+            this.target = {
+                x: this.x + Math.random() * wanderRadius - wanderRadius / 2,
+                y: this.y + Math.random() * wanderRadius - wanderRadius / 2
+            };
         }
-
-        if (this.stats.health <= 0) {
-            this.die();
+        let desired = this.seek(this.target);
+    
+        // Update velocity towards the target
+        this.velocity.x += desired.x * change;
+        this.velocity.y += desired.y * change;
+    
+        // If the NPC reaches the target, choose a new wandering point
+        if (this.distance(this, this.target) < 10) {
+            this.target = null;
         }
     }
 }
