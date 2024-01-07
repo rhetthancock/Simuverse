@@ -10,19 +10,22 @@ class NPC {
             y: (Math.random() - 0.5) * 2 
         };
         this.maxSpeed = 3;
-        this.perceptionRadius = 40;
+        
         this.stats = {
             health: 100,
             energy: 100,
             hunger: 100,
-            thirst: 100
+            thirst: 100,
+            strength: 20
         };
         this.emotions = {
             happiness: 50,
             anxiety: 0
         };
         this.perceptionAngle = Math.PI / 2;
+        this.perceptionRadius = 40;
         this.perceptionDistance = 500;
+
         this.rememberedResources = [];
         this.patrolPoints = [];
         this.currentPatrolPoint = 0;
@@ -196,7 +199,7 @@ class NPC {
         this.velocity = VectorUtils.setMagnitude(oppositeDirection, this.maxSpeed);
     
         // If a threat is detected during this rotation, continue fleeing
-        if (this.isPlayerInPerceptionCone(player)) {
+        if (this.isTargetPerceivable(player)) {
             this.flee(player);
         }
     }
@@ -209,10 +212,7 @@ class NPC {
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
     
-        // If the NPC sees a threat while checking behind, it should continue fleeing
-        if (this.isPlayerInPerceptionCone(sim.player)) {
-            this.flee(sim.player);
-        }
+
     }
     die() {
         this.isAlive = false;
@@ -283,7 +283,7 @@ class NPC {
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
     }    
     flee(player) {
-        if (this.isPlayerInPerceptionCone(player)) {
+        if (this.isTargetPerceivable(player)) {
             this.lastPlayerPosition = { x: player.x, y: player.y };
             this.fleeDuration = this.fleeMaxDuration;
         }
@@ -316,7 +316,7 @@ class NPC {
     }
     interactWithOtherNPCs(npcs) {
         for (let other of npcs) {
-            if (other !== this && other.isAlive && this.isNPCInPerceptionCone(other)) {
+            if (other !== this && other.isAlive && this.isTargetPerceivable(other)) {
                 // Increase happiness and decrease anxiety when interacting
                 this.emotions.happiness = Math.min(this.emotions.happiness + 0.001, 100);
                 this.emotions.anxiety = Math.max(this.emotions.anxiety - 0.001, 0);
@@ -324,19 +324,12 @@ class NPC {
             }
         }
     }
-    isNPCInPerceptionCone(other) {
+    isTargetPerceivable(target) {
         let directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        let angleToNPC = Math.atan2(other.y - this.y, other.x - this.x);
-        let angleDifference = Math.abs(directionAngle - angleToNPC);
+        let angleToTarget = Math.atan2(target.y - this.y, target.x - this.x);
+        let angleDifference = Math.abs(directionAngle - angleToTarget);
         return angleDifference < this.perceptionAngle / 2 && 
-               this.distance(this, other) < this.perceptionDistance;
-    }
-    isPlayerInPerceptionCone(player) {
-        let directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        let angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
-        let angleDifference = Math.abs(directionAngle - angleToPlayer);
-        return angleDifference < this.perceptionAngle / 2 && 
-               this.distance(this, player) < this.perceptionDistance;
+               this.distance(this, target) < this.perceptionDistance;
     }
     limit(vector, max) {
         const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
@@ -420,7 +413,7 @@ class NPC {
         return Math.random() < randomCheckChance;
     }
     signalToInteract(otherNPC) {
-        if (this.isNPCInPerceptionCone(otherNPC)) {
+        if (this.isTargetPerceivable(otherNPC)) {
             // Send a signal to the other NPC
             otherNPC.receiveSignal(this);
         }
@@ -451,7 +444,7 @@ class NPC {
                 this.lookAround();
             } else if (this.fleeDuration > 0) {
                 this.flee(player);
-            } else if (this.isPlayerInPerceptionCone(player)) {
+            } else if (this.isTargetPerceivable(player)) {
                 this.flee(player);
                 this.fleeDuration = this.fleeMaxDuration;
             } else if (this.needsResource) {
