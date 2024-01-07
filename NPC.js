@@ -275,6 +275,14 @@ class NPC {
         context.fillStyle = "rgba(255, 255, 0, 0.2)"; // Semi-transparent yellow
         context.fill();
     }
+    faceTarget(target) {
+        let angleToTarget = Math.atan2(target.y - this.y, target.x - this.x);
+        let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let newAngle = this.lerp(currentAngle, angleToTarget, 0.01); // Adjust for smoother rotation
+    
+        this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
+        this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
+    }    
     flee(player) {
         if (this.isPlayerInPerceptionCone(player)) {
             this.lastPlayerPosition = { x: player.x, y: player.y };
@@ -313,6 +321,7 @@ class NPC {
                 // Increase happiness and decrease anxiety when interacting
                 this.emotions.happiness = Math.min(this.emotions.happiness + 0.001, 100);
                 this.emotions.anxiety = Math.max(this.emotions.anxiety - 0.001, 0);
+                this.signalToInteract(other);
             }
         }
     }
@@ -340,6 +349,14 @@ class NPC {
         }
         return vector;
     }
+    lookAround() {
+        this.isLookingAround = true;
+        let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let newAngle = currentAngle + 0.02; // Adjust for rotation speed
+    
+        this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
+        this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
+    }
     observeAndRememberResources(resources) {
         resources.forEach(resource => {
             if (this.distance(this, resource) < this.perceptionDistance) {
@@ -366,6 +383,18 @@ class NPC {
             this.currentPatrolPoint = (this.currentPatrolPoint + 1) % this.patrolPoints.length;
         }
         this.seek(target);
+    }
+    receiveSignal(fromNPC) {
+        this.isInteracting = true;
+        this.interactionTimer = 0;
+        this.stopMovement(); // Stop movement first
+        this.faceTarget(fromNPC); // Then face the NPC who sent the signal
+    
+        // Interaction logic, e.g., share knowledge or trade
+        // ...
+    
+        // Set a timer or condition to end the interaction
+        this.interactionTimerLimit = 300; // Example: 300 frames
     }
     rest() {
         // Set velocity to zero to make NPC stationary
@@ -398,6 +427,18 @@ class NPC {
         let randomCheckChance = 0.01 + anxietyFactor * 0.05; // Increases chance with higher anxiety
         return Math.random() < randomCheckChance;
     }
+    signalToInteract(otherNPC) {
+        if (this.isNPCInPerceptionCone(otherNPC)) {
+            // Send a signal to the other NPC
+            otherNPC.receiveSignal(this);
+        }
+    }
+    stopMovement() {
+        if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+            this.velocity.x = this.lerp(this.velocity.x, 0, 0.05);
+            this.velocity.y = this.lerp(this.velocity.y, 0, 0.05);
+        }
+    }    
     update(npcs, resources, player) {
         if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
     
@@ -405,8 +446,18 @@ class NPC {
         this.adjustEnergyUsage();
     
         if (this.stats.energy > 0) {
+
             // Movement and actions only occur if there's enough energy
-            if (this.fleeDuration > 0) {
+            if (this.isInteracting) {
+                this.interactionTimer++;
+                if (this.interactionTimer >= this.interactionTimerLimit) {
+                    this.isInteracting = false;
+                    this.interactionTimer = 0;
+                    this.wander(); // Resume wandering after interaction
+                }
+            } else if (this.isLookingAround) {
+                this.lookAround();
+            } else if (this.fleeDuration > 0) {
                 this.flee(player);
             } else if (this.isPlayerInPerceptionCone(player)) {
                 this.flee(player);
