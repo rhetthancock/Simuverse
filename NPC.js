@@ -102,7 +102,7 @@ class NPC {
         if (total > 0) {
             average.x /= total;
             average.y /= total;
-            average = this.setMagnitude(average, this.maxSpeed);
+            average = VectorUtils.setMagnitude(average, this.maxSpeed);
             let steer = { x: average.x - this.velocity.x, y: average.y - this.velocity.y };
             return steer;
         } else {
@@ -145,7 +145,7 @@ class NPC {
             steering.x /= total;
             steering.y /= total;
             // Set magnitude to maxSpeed
-            steering = this.setMagnitude(steering, this.maxSpeed);
+            steering = VectorUtils.setMagnitude(steering, this.maxSpeed);
             // Subtract current velocity
             steering.x -= this.velocity.x;
             steering.y -= this.velocity.y;
@@ -194,7 +194,7 @@ class NPC {
         };
     
         // Smoothly rotate to the opposite direction
-        this.velocity = this.setMagnitude(oppositeDirection, this.maxSpeed);
+        this.velocity = VectorUtils.setMagnitude(oppositeDirection, this.maxSpeed);
     
         // If a threat is detected during this rotation, continue fleeing
         if (this.isPlayerInPerceptionCone(player)) {
@@ -294,7 +294,7 @@ class NPC {
                 x: this.x - this.lastPlayerPosition.x,
                 y: this.y - this.lastPlayerPosition.y
             };
-            fleeDirection = this.setMagnitude(fleeDirection, this.fleeSpeed);
+            fleeDirection = VectorUtils.setMagnitude(fleeDirection, this.fleeSpeed);
     
             this.fleeAcceleration = 0.002;
             this.velocity.x = this.lerp(this.velocity.x, fleeDirection.x, this.fleeAcceleration);
@@ -415,12 +415,8 @@ class NPC {
     }
     seek(target) {
         let desired = { x: target.x - this.x, y: target.y - this.y };
-        desired = this.setMagnitude(desired, this.maxSpeed);
+        desired = VectorUtils.setMagnitude(desired, this.maxSpeed);
         return { x: desired.x - this.velocity.x, y: desired.y - this.velocity.y };
-    }
-    setMagnitude(vector, magnitude) {
-        let len = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-        return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
     }
     shouldCheckBehind() {
         let anxietyFactor = this.emotions.anxiety / 100; // Converts anxiety to a value between 0 and 1
