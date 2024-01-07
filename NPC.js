@@ -84,6 +84,31 @@ class NPC {
         }
         return steering;
     }
+    collectResource(resources) {
+        // Find the nearest resource of a specific type
+        // Example: Find the nearest 'food' resource
+        let nearestResource = null;
+        let minDistance = Infinity;
+        for (let resource of resources) {
+            if (resource.type === 'food') { // Adjust type as needed
+                let distance = this.distance(this, resource);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestResource = resource;
+                }
+            }
+        }
+
+        if (nearestResource && minDistance < 20) { // 20 is the collection range
+            // Collect the resource
+            nearestResource.quantity--;
+            if (nearestResource.quantity <= 0) {
+                // Remove the resource from the array
+                const index = resources.indexOf(nearestResource);
+                resources.splice(index, 1);
+            }
+        }
+    }
     die() {
         this.isAlive = false;
         this.color = '#808080'; // Gray color for dead NPCs

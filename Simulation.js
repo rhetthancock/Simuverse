@@ -146,11 +146,10 @@ class Simulation {
             context.fillStyle = zone.color;
             context.fillRect(zone.x, zone.y, zone.width, zone.height);
         }
-    
+
         // Draw Resources
         for (let resource of this.resources) {
-            context.fillStyle = resource.color;
-            context.fillRect(resource.x, resource.y, resource.size, resource.size);
+            resource.draw(context);
         }
     
         // Draw NPCs
@@ -246,14 +245,10 @@ class Simulation {
         const area = this.getVisibleArea();
         const x = Math.random() * area.width + area.x;
         const y = Math.random() * area.height + area.y;
-        let resource = {
-            x: x,
-            y: y,
-            size: 10,
-            color: '#00ffff'
-        };
+        const types = ['food', 'wood', 'stone'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        let resource = new Resource(x, y, type);
         this.resources.push(resource);
-        this.stats.totalResources++;
     }
     update() {
         this.movePlayer();
