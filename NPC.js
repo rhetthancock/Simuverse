@@ -81,8 +81,26 @@ class NPC {
         return Math.sqrt(dx * dx + dy * dy);
     }
     draw(context) {
+        // Draw NPC
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.size, this.size);
+
+        // Draw direction indicator
+        const directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        const arrowLength = 20; // Adjust as needed
+        const endX = this.x + Math.cos(directionAngle) * arrowLength;
+        const endY = this.y + Math.sin(directionAngle) * arrowLength;
+
+        context.strokeStyle = '#fff'; // Arrow color
+        context.beginPath();
+        context.moveTo(this.x, this.y);
+        context.lineTo(endX, endY);
+        context.stroke();
+
+        if (this === sim.selectedEntity) {
+            context.strokeStyle = '#ff0'; // Highlight color
+            context.strokeRect(this.x, this.y, this.size, this.size);
+        }
     }
     interactWithOtherNPCs(npcs) {
         for (let other of npcs) {

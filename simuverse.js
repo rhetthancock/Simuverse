@@ -17,6 +17,12 @@ function setupEventListeners(sim) {
         const stateString = prompt('What is your state string?');
         sim.loadState(stateString);
     });
+    sim.canvas.addEventListener('click', function(event) {
+        const rect = sim.canvas.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
+        sim.selectEntityAt(clickX, clickY);
+    });
 }
 
 window.addEventListener('DOMContentLoaded', main);

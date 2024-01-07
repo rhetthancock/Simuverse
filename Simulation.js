@@ -95,9 +95,9 @@ class Simulation {
         // Draw Debug Text
         context.font = "10px monospace";
         context.fillStyle = '#fff';
-        context.fillText(`Frames: ${this.frames}`, 5, 10);
-        context.fillText(`Height: ${this.canvas.height}`, 5, 25);
-        context.fillText(`Width: ${this.canvas.width}`, 5, 40);
+        context.fillText(`Frames: ${this.frames}`, 10, 15);
+        context.fillText(`Height: ${this.canvas.height}`, 10, 30);
+        context.fillText(`Width: ${this.canvas.width}`, 10, 45);
         this.frames++;
 
         // Render stats
@@ -105,6 +105,12 @@ class Simulation {
         context.fillStyle = "#0c0";
         context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
         context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
+
+        if (this.selectedEntity) {
+            context.fillStyle = "#fff";
+            context.fillText(`Position: (${this.selectedEntity.x}, ${this.selectedEntity.y})`, 10, 60);
+            // Display other information as needed
+        }
     }
     saveState() {
         const state = {
@@ -113,6 +119,27 @@ class Simulation {
         };
         const stateString = JSON.stringify(state);
         alert(stateString);
+    }
+    selectEntityAt(x, y) {
+        // Deselect previously selected entity
+        this.selectedEntity = null;
+
+        // Check if an NPC or resource was clicked
+        for (let npc of this.npcs) {
+            if (x >= npc.x && x <= npc.x + npc.size && y >= npc.y && y <= npc.y + npc.size) {
+                this.selectedEntity = npc;
+                break;
+            }
+        }
+
+        if (!this.selectedEntity) {
+            for (let resource of this.resources) {
+                if (x >= resource.x && x <= resource.x + resource.size && y >= resource.y && y <= resource.y + resource.size) {
+                    this.selectedEntity = resource;
+                    break;
+                }
+            }
+        }
     }
     spawnNPC() {
         let npc = new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height);
