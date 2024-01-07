@@ -16,15 +16,15 @@ class Simulation {
             totalNPCs: 0,
             totalResources: 0
         }
+        this.scale = 1;
+        this.offset = { x: 0, y: 0 };
+        this.isDragging = false;
+        this.lastMouse = { x: 0, y: 0 };
         this.grid = new Grid(100, 100);
         for (let i = 0; i < 10; i++) {
             this.spawnResource();
             this.spawnNPC();
         }
-        this.scale = 1;
-        this.offset = { x: 0, y: 0 };
-        this.isDragging = false;
-        this.lastMouse = { x: 0, y: 0 };
     }
     applyZoneEffects() {
         for (let zone of this.zones) {
@@ -73,6 +73,18 @@ class Simulation {
         requestAnimationFrame(() => this.simLoop());
         this.update();
         this.render();
+    }
+    getVisibleArea() {
+        const visibleWidth = this.canvas.width / this.scale;
+        const visibleHeight = this.canvas.height / this.scale;
+        const visibleX = -this.offset.x / this.scale;
+        const visibleY = -this.offset.y / this.scale;
+        return {
+            x: visibleX,
+            y: visibleY,
+            width: visibleWidth,
+            height: visibleHeight
+        };
     }
     handleKeyDown(event) {
         this.keysPressed[event.key] = true;
@@ -199,14 +211,20 @@ class Simulation {
         this.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     }
     spawnNPC() {
-        let npc = new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height);
+        const area = this.getVisibleArea();
+        const x = Math.random() * area.width + area.x;
+        const y = Math.random() * area.height + area.y;
+        let npc = new NPC(x, y);
         this.npcs.push(npc);
         this.stats.totalNPCs++;
     }
     spawnResource() {
+        const area = this.getVisibleArea();
+        const x = Math.random() * area.width + area.x;
+        const y = Math.random() * area.height + area.y;
         let resource = {
-            x: Math.random() * this.canvas.width,
-            y: Math.random() * this.canvas.height,
+            x: x,
+            y: y,
             size: 10,
             color: '#00ffff'
         };
