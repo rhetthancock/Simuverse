@@ -3,7 +3,6 @@ class NPC {
         this.isAlive = true;
         this.x = x;
         this.y = y;
-        this.health = 100;
         this.color = '#' + Math.floor(Math.random()*16777215).toString(16); // Random color
         this.size = (Math.random() * 20) + 10;
         this.velocity = { 
@@ -180,7 +179,7 @@ class NPC {
     checkBehind() {
         let desiredAngle = Math.atan2(-this.velocity.y, -this.velocity.x);
         let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        let newAngle = this.lerp(currentAngle, desiredAngle, 0.01); // Smoother rotation
+        let newAngle = VectorUtils.lerp(currentAngle, desiredAngle, 0.01); // Smoother rotation
 
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
@@ -205,7 +204,7 @@ class NPC {
         // Smoothly rotate to look behind
         let desiredAngle = Math.atan2(-this.velocity.y, -this.velocity.x);
         let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        let newAngle = this.lerp(currentAngle, desiredAngle, 0.01); // Adjust this value for rotation speed
+        let newAngle = VectorUtils.lerp(currentAngle, desiredAngle, 0.01); // Adjust this value for rotation speed
     
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
@@ -278,7 +277,7 @@ class NPC {
     faceTarget(target) {
         let angleToTarget = Math.atan2(target.y - this.y, target.x - this.x);
         let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        let newAngle = this.lerp(currentAngle, angleToTarget, 0.01); // Adjust for smoother rotation
+        let newAngle = VectorUtils.lerp(currentAngle, angleToTarget, 0.01); // Adjust for smoother rotation
     
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
@@ -297,8 +296,8 @@ class NPC {
             fleeDirection = VectorUtils.setMagnitude(fleeDirection, this.fleeSpeed);
     
             this.fleeAcceleration = 0.002;
-            this.velocity.x = this.lerp(this.velocity.x, fleeDirection.x, this.fleeAcceleration);
-            this.velocity.y = this.lerp(this.velocity.y, fleeDirection.y, this.fleeAcceleration);
+            this.velocity.x = VectorUtils.lerp(this.velocity.x, fleeDirection.x, this.fleeAcceleration);
+            this.velocity.y = VectorUtils.lerp(this.velocity.y, fleeDirection.y, this.fleeAcceleration);
     
             this.fleeDuration--;
         } else {
@@ -338,9 +337,6 @@ class NPC {
         let angleDifference = Math.abs(directionAngle - angleToPlayer);
         return angleDifference < this.perceptionAngle / 2 && 
                this.distance(this, player) < this.perceptionDistance;
-    }
-    lerp(start, end, amt) {
-        return (1 - amt) * start + amt * end;
     }
     limit(vector, max) {
         const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
@@ -431,8 +427,8 @@ class NPC {
     }
     stopMovement() {
         if (this.velocity.x !== 0 || this.velocity.y !== 0) {
-            this.velocity.x = this.lerp(this.velocity.x, 0, 0.05);
-            this.velocity.y = this.lerp(this.velocity.y, 0, 0.05);
+            this.velocity.x = VectorUtils.lerp(this.velocity.x, 0, 0.05);
+            this.velocity.y = VectorUtils.lerp(this.velocity.y, 0, 0.05);
         }
     }    
     update(npcs, resources, player) {
@@ -523,7 +519,7 @@ class NPC {
         desired = this.limit(desired, this.maxSpeed / 10); // Limit speed for smoother wandering
 
         // Gradually adjust the current velocity towards the desired velocity
-        this.velocity.x = this.lerp(this.velocity.x, desired.x, 0.05);
-        this.velocity.y = this.lerp(this.velocity.y, desired.y, 0.05);
+        this.velocity.x = VectorUtils.lerp(this.velocity.x, desired.x, 0.05);
+        this.velocity.y = VectorUtils.lerp(this.velocity.y, desired.y, 0.05);
     }
 }
