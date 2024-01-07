@@ -10,9 +10,9 @@ class FlockingBehavior {
         let alignment = this.calculateAlignment(npc, npcs);
         let cohesion = this.calculateCohesion(npc, npcs);
         // Apply limits to forces
-        separation = this.limit(separation, this.maxForce);
-        alignment = this.limit(alignment, this.maxForce);
-        cohesion = this.limit(cohesion, this.maxForce);
+        separation = VectorUtils.limit(separation, this.maxForce);
+        alignment = VectorUtils.limit(alignment, this.maxForce);
+        cohesion = VectorUtils.limit(cohesion, this.maxForce);
         // Combine flocking behaviors
         npc.velocity.x += separation.x * this.separationWeight + alignment.x * this.alignmentWeight + cohesion.x * this.cohesionWeight;
         npc.velocity.y += separation.y * this.separationWeight + alignment.y * this.alignmentWeight + cohesion.y * this.cohesionWeight;
@@ -81,8 +81,5 @@ class FlockingBehavior {
             steering.y -= npc.velocity.y;
         }
         return steering;
-    }
-    limit(vector, max) {
-        return VectorUtils.limit(vector, max);
     }
 }
