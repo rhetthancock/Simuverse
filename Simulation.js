@@ -23,7 +23,7 @@ class Simulation {
         this.isDragging = false;
         this.lastMouse = { x: 0, y: 0 };
         this.grid = new Grid(100, 100);
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 5; i++) {
             this.spawnResource();
             this.spawnNPC();
         }
@@ -254,7 +254,7 @@ class Simulation {
         this.movePlayer();
         this.applyZoneEffects();
         this.npcs.forEach(npc => {
-            npc.update(this.npcs);
+            npc.update(this.npcs , this.resources, this.player);
             npc.interactWithOtherNPCs(this.npcs);
         });
         this.checkInteractions();

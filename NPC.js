@@ -22,6 +22,48 @@ class NPC {
         };
         this.perceptionAngle = Math.PI / 2;
         this.perceptionDistance = 500;
+        this.rememberedResources = [];
+        this.patrolPoints = [];
+        this.currentPatrolPoint = 0;
+        
+        this.fleeSpeed = 5;
+        this.fleeAcceleration = 0.1;
+        this.fleeMaxDuration = 400;
+
+        this.walkSpeed = 1;
+        this.runSpeed = 2.5;
+        this.sprintSpeed = this.maxSpeed;
+        this.energyUsage = {
+            walk: 0.0001,
+            run: 0.001,
+            sprint: 0.05,
+            stationary: -0.00001 // Negative for energy regeneration
+        };
+    }
+    adjustEnergyUsage() {
+        let currentSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+        if (currentSpeed > this.runSpeed) {
+            this.stats.energy -= this.energyUsage.sprint;
+        } else if (currentSpeed > this.walkSpeed) {
+            this.stats.energy -= this.energyUsage.run;
+        } else if (currentSpeed > 0) {
+            this.stats.energy -= this.energyUsage.walk;
+        } else {
+            this.stats.energy += this.energyUsage.stationary;
+        }
+
+        // Ensure energy does not drop below 0
+        this.stats.energy = Math.max(this.stats.energy, 0);
+
+        // Check if energy is below the threshold
+        if (this.stats.energy <= this.lowEnergyThreshold) {
+            this.lowEnergyDuration++;
+            if (this.lowEnergyDuration >= this.lowEnergyMaxDuration) {
+                this.stats.health -= 0.1; // Health decreases when energy is low for too long
+            }
+        } else {
+            this.lowEnergyDuration = 0; // Reset duration if energy is above the threshold
+        }
     }
     applyFlockingBehaviors(npcs) {
         const separationWeight = 1.5;
@@ -133,6 +175,16 @@ class NPC {
             }
         }
     }
+    checkBehind() {
+        // Flip the direction by 180 degrees
+        this.velocity.x = -this.velocity.x;
+        this.velocity.y = -this.velocity.y;
+        // Perform a quick check and then revert back to original direction
+        setTimeout(() => {
+            this.velocity.x = -this.velocity.x;
+            this.velocity.y = -this.velocity.y;
+        }, 2000); // Check duration
+    }
     die() {
         this.isAlive = false;
         this.color = '#808080'; // Gray color for dead NPCs
@@ -193,19 +245,31 @@ class NPC {
         context.fillStyle = "rgba(255, 255, 0, 0.2)"; // Semi-transparent yellow
         context.fill();
     }
-    flee(target) {
-        if (!target) return;
+    flee(player) {
+        if (this.isPlayerInPerceptionCone(player)) {
+            // Update the last seen position of the player
+            this.lastPlayerPosition = { x: player.x, y: player.y };
+            this.fleeDuration = this.fleeMaxDuration;
+        }
 
-        // Calculate the vector pointing away from the target
-        let desired = {
-            x: this.x - target.x,
-            y: this.y - target.y
-        };
-        desired = this.setMagnitude(desired, this.maxSpeed);
+        if (this.fleeDuration > 0) {
+            // Calculate the direction away from the last seen position of the player
+            let fleeDirection = {
+                x: this.x - this.lastPlayerPosition.x,
+                y: this.y - this.lastPlayerPosition.y
+            };
+            fleeDirection = this.setMagnitude(fleeDirection, this.fleeSpeed);
 
-        // Update velocity in the opposite direction of the target
-        this.velocity.x += desired.x;
-        this.velocity.y += desired.y;
+            // Apply flee velocity
+            this.velocity.x = fleeDirection.x;
+            this.velocity.y = fleeDirection.y;
+
+            // Decrement flee duration
+            this.fleeDuration--;
+        } else {
+            // Reset last player position when flee duration is over
+            this.lastPlayerPosition = null;
+        }
     }
     handleEnergyAndHealth() {
         if (this.velocity.x !== 0 || this.velocity.y !== 0) {
@@ -223,6 +287,13 @@ class NPC {
             }
         }
     }
+    isPlayerInPerceptionCone(player) {
+        let directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let angleToPlayer = Math.atan2(player.y - this.y, player.x - this.x);
+        let angleDifference = Math.abs(directionAngle - angleToPlayer);
+        return angleDifference < this.perceptionAngle / 2 && 
+               this.distance(this, player) < this.perceptionDistance;
+    }
     lerp(start, end, amt) {
         return (1 - amt) * start + amt * end;
     }
@@ -232,6 +303,33 @@ class NPC {
             return { x: vector.x / magnitude * max, y: vector.y / magnitude * max };
         }
         return vector;
+    }
+    observeAndRememberResources(resources) {
+        resources.forEach(resource => {
+            if (this.distance(this, resource) < this.perceptionDistance) {
+                // Check if the resource is already remembered
+                const isAlreadyRemembered = this.rememberedResources.some(rememberedResource => 
+                    rememberedResource.x === resource.x && 
+                    rememberedResource.y === resource.y &&
+                    rememberedResource.type === resource.type
+                );
+
+                if (!isAlreadyRemembered) {
+                    this.rememberedResources.push({ 
+                        x: resource.x, 
+                        y: resource.y, 
+                        type: resource.type 
+                    });
+                }
+            }
+        });
+    }
+    patrol() {
+        let target = this.patrolPoints[this.currentPatrolPoint];
+        if (this.distance(this, target) < 10) { // 10 is a threshold for reaching a point
+            this.currentPatrolPoint = (this.currentPatrolPoint + 1) % this.patrolPoints.length;
+        }
+        this.seek(target);
     }
     rest() {
         // Set velocity to zero to make NPC stationary
@@ -259,23 +357,52 @@ class NPC {
         let len = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
         return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
     }
+    shouldCheckBehind() {
+        // Only check behind if not fleeing
+        if (!this.fleeDuration) return false;
+        return Math.random() < 0.01; // Example: 1% chance per frame
+    }
     update(npcs, resources, player) {
         if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
-
-        if (this.isFleeing) {
-            this.flee(player); // Assuming player is the threat
-        } else if (this.isResting) {
-            this.rest();
-        } else if (this.needsResource) {
-            this.collectResource(resources);
+    
+        // Handle energy depletion and health
+        this.adjustEnergyUsage();
+    
+        if (this.stats.energy > 0) {
+            // Movement and actions only occur if there's enough energy
+            if (this.fleeDuration > 0) {
+                this.flee(player);
+            } else if (this.isPlayerInPerceptionCone(player)) {
+                this.flee(player);
+                this.fleeDuration = this.fleeMaxDuration;
+            } else if (this.needsResource) {
+                this.collectResource(resources);
+            } else if (this.patrolPoints.length > 0) {
+                this.patrol();
+            } else {
+                this.wander();
+                this.applyFlockingBehaviors(npcs);
+            }
+            
+            if (this.shouldCheckBehind()) {
+                this.checkBehind();
+            }
+    
+            this.updatePosition();
         } else {
-            this.wander();
-            this.applyFlockingBehaviors(npcs);
+            // If no energy, the NPC cannot move or perform actions
+            this.velocity.x = 0;
+            this.velocity.y = 0;
         }
-
-        this.updatePosition();
-        this.handleEnergyAndHealth();
-    }
+    
+        // Always observe and remember resources
+        this.observeAndRememberResources(resources);
+    
+        // Resting logic
+        if (this.isResting) {
+            this.rest();
+        }
+    }    
     updatePosition() {
         // Update the NPC's position
         let newX = this.x + this.velocity.x;
