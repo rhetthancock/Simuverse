@@ -10,6 +10,8 @@ class Simulation {
         this.zones = [
             { x: 100, y: 100, width: 200, height: 200, effect: 'slow', color: '#222222' }
         ];
+        this.dayLength = 60000; // Length of a day in milliseconds (e.g., 60 seconds)
+        this.currentTime = 0;
         this.player = new Player(50, 50);
         this.npcs = [];
         this.stats = {
@@ -53,7 +55,12 @@ class Simulation {
         context.fillText(`Frames: ${this.frames}`, 10, 15);
         context.fillText(`Height: ${this.canvas.height}`, 10, 30);
         context.fillText(`Width: ${this.canvas.width}`, 10, 45);
-        this.frames++;
+        // Convert currentTime to 24H format
+        const totalMinutes = (this.currentTime / this.dayLength) * 24 * 60;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = Math.floor(totalMinutes % 60);
+        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        context.fillText(`Time: ${timeString} (${this.currentTime}/${this.dayLength})`, 10, 60);
 
         // Render stats
         context.font = "10px monospace";
@@ -63,10 +70,10 @@ class Simulation {
 
         if (this.selectedEntity instanceof NPC) {
             // Display NPC stats and inventory
-            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 60);
-            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 75);
-            context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 90);
-            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 105);
+            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 75);
+            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 90);
+            context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 105);
+            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 120);
         }
     }
     simLoop() {
@@ -74,6 +81,21 @@ class Simulation {
         this.update();
         this.render();
     }
+    getBackgroundColor() {
+        const progress = this.currentTime / this.dayLength;
+        const intensity = Math.cos(progress * Math.PI * 2) * 0.5 + 0.5;
+    
+        const dayColor = { r: 51, g: 126, b: 187 };
+        const nightColor = { r: 1, g: 14, b: 24 };
+    
+        // Interpolate between day and night colors based on intensity
+        const r = nightColor.r * intensity + dayColor.r * (1 - intensity);
+        const g = nightColor.g * intensity + dayColor.g * (1 - intensity);
+        const b = nightColor.b * intensity + dayColor.b * (1 - intensity);
+    
+        return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+    }
+    
     getVisibleArea() {
         const visibleWidth = this.canvas.width / this.scale;
         const visibleHeight = this.canvas.height / this.scale;
@@ -110,9 +132,10 @@ class Simulation {
     }
     render() {
         const context = this.context;
-        
-        // Redraw (Clear) Background
-        context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw background
+        context.fillStyle = this.getBackgroundColor();
+        context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         context.save();
         context.translate(this.offset.x, this.offset.y);
@@ -141,6 +164,7 @@ class Simulation {
         context.restore();
 
         this.drawFixedUI();
+        this.frames++;
     }
     saveState() {
         const state = {
@@ -239,5 +263,6 @@ class Simulation {
             npc.interactWithOtherNPCs(this.npcs);
         });
         this.checkInteractions();
+        this.currentTime = (this.currentTime + 1) % this.dayLength;
     }
 }
