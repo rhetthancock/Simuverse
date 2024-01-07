@@ -21,6 +21,10 @@ class Simulation {
             this.spawnResource();
             this.spawnNPC();
         }
+        this.scale = 1;
+        this.offset = { x: 0, y: 0 };
+        this.isDragging = false;
+        this.lastMouse = { x: 0, y: 0 };
     }
     applyZoneEffects() {
         for (let zone of this.zones) {
@@ -39,6 +43,31 @@ class Simulation {
                 //npc.color = '#ff0000';
             }
         });
+    }
+    drawFixedUI() {
+        const context = this.context;
+
+        // Draw Debug Text
+        context.font = "10px monospace";
+        context.fillStyle = '#fff';
+        context.fillText(`Frames: ${this.frames}`, 10, 15);
+        context.fillText(`Height: ${this.canvas.height}`, 10, 30);
+        context.fillText(`Width: ${this.canvas.width}`, 10, 45);
+        this.frames++;
+
+        // Render stats
+        context.font = "10px monospace";
+        context.fillStyle = "#0c0";
+        context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
+        context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
+
+        if (this.selectedEntity instanceof NPC) {
+            // Display NPC stats and inventory
+            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 60);
+            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 75);
+            context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 90);
+            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 105);
+        }
     }
     simLoop() {
         requestAnimationFrame(() => this.simLoop());
@@ -69,9 +98,14 @@ class Simulation {
     }
     render() {
         const context = this.context;
+        
         // Redraw (Clear) Background
         context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
+        context.save();
+        context.translate(this.offset.x, this.offset.y);
+        context.scale(this.scale, this.scale);
+
         // Draw Zones
         for(let zone of this.zones) {
             context.fillStyle = zone.color;
@@ -91,28 +125,10 @@ class Simulation {
     
         // Draw Player
         this.player.draw(context);
-    
-        // Draw Debug Text
-        context.font = "10px monospace";
-        context.fillStyle = '#fff';
-        context.fillText(`Frames: ${this.frames}`, 10, 15);
-        context.fillText(`Height: ${this.canvas.height}`, 10, 30);
-        context.fillText(`Width: ${this.canvas.width}`, 10, 45);
-        this.frames++;
 
-        // Render stats
-        context.font = "10px monospace";
-        context.fillStyle = "#0c0";
-        context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
-        context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
+        context.restore();
 
-        if (this.selectedEntity instanceof NPC) {
-            // Display NPC stats and inventory
-            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 60);
-            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 75);
-            context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 90);
-            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 105);
-        }
+        this.drawFixedUI();
     }
     saveState() {
         const state = {
@@ -122,7 +138,10 @@ class Simulation {
         const stateString = JSON.stringify(state);
         alert(stateString);
     }
-    selectEntityAt(x, y) {
+    selectEntityAt(screenX, screenY) {
+        const x = (screenX - this.offset.x) / this.scale;
+        const y = (screenY - this.offset.y) / this.scale;
+
         // Deselect previously selected entity
         this.selectedEntity = null;
 
@@ -142,6 +161,42 @@ class Simulation {
                 }
             }
         }
+    }
+    setupEventListeners() {
+        this.canvas.addEventListener('click', (event) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+            this.selectEntityAt(clickX, clickY);
+        });
+        this.canvas.addEventListener('mousedown', (event) => {
+            if (event.button === 2) { // Right mouse button
+                this.isDragging = true;
+                this.lastMouse.x = event.clientX;
+                this.lastMouse.y = event.clientY;
+            }
+        });
+        this.canvas.addEventListener('mousemove', (event) => {
+            if (this.isDragging) {
+                this.offset.x += (event.clientX - this.lastMouse.x) / this.scale;
+                this.offset.y += (event.clientY - this.lastMouse.y) / this.scale;
+                this.lastMouse.x = event.clientX;
+                this.lastMouse.y = event.clientY;
+            }
+        });
+        this.canvas.addEventListener('wheel', (event) => {
+            const zoomIntensity = 0.001;
+            const zoom = Math.exp(event.deltaY * -zoomIntensity);
+            this.scale *= zoom;
+            // Adjust offset to zoom into the mouse position
+            this.offset.x -= (event.clientX - this.offset.x) * (zoom - 1);
+            this.offset.y -= (event.clientY - this.offset.y) * (zoom - 1);
+        });
+        window.addEventListener('mouseup', () => {
+            this.isDragging = false;
+        });
+        // Prevent context menu on right-click
+        this.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     }
     spawnNPC() {
         let npc = new NPC(Math.random() * this.canvas.width, Math.random() * this.canvas.height);
