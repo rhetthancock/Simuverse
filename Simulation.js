@@ -36,7 +36,7 @@ class Simulation {
     checkInteractions() {
         this.npcs.forEach(npc => {
             if (isColliding(this.player, npc)) {
-                npc.color = '#ff0000';
+                //npc.color = '#ff0000';
             }
         });
     }
@@ -106,10 +106,10 @@ class Simulation {
         context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
         context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
 
-        if (this.selectedEntity) {
-            context.fillStyle = "#fff";
-            context.fillText(`Position: (${this.selectedEntity.x}, ${this.selectedEntity.y})`, 10, 60);
-            // Display other information as needed
+        if (this.selectedEntity instanceof NPC) {
+            // Display NPC stats and inventory
+            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 60);
+            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 75);
         }
     }
     saveState() {

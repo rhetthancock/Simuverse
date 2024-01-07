@@ -1,5 +1,6 @@
 class NPC {
     constructor(x, y) {
+        this.isAlive = true;
         this.x = x;
         this.y = y;
         this.health = 100;
@@ -11,12 +12,16 @@ class NPC {
         };
         this.maxSpeed = 3;
         this.perceptionRadius = 40;
+        this.stats = {
+            health: 100,
+            energy: 100
+        };
     }
     calculateAlignment(npcs) {
         let average = { x: 0, y: 0 };
         let total = 0;
         for (let other of npcs) {
-            if (other !== this && this.distance(this, other) < this.perceptionRadius) {
+            if (other !== this && other.isAlive && this.distance(this, other) < this.perceptionRadius) {
                 average.x += other.velocity.x;
                 average.y += other.velocity.y;
                 total++;
@@ -36,7 +41,7 @@ class NPC {
         let average = { x: 0, y: 0 };
         let total = 0;
         for (let other of npcs) {
-            if (other !== this && this.distance(this, other) < this.perceptionRadius) {
+            if (other !== this && other.isAlive && this.distance(this, other) < this.perceptionRadius) {
                 average.x += other.x;
                 average.y += other.y;
                 total++;
@@ -55,7 +60,7 @@ class NPC {
         let total = 0;
         for (let other of npcs) {
             let distance = this.distance(this, other);
-            if (other !== this && distance < this.perceptionRadius) {
+            if (other !== this && other.isAlive && this.distance(this, other) < this.perceptionRadius) {
                 let diff = { x: this.x - other.x, y: this.y - other.y };
                 diff.x /= distance; // Weight by distance
                 diff.y /= distance;
@@ -75,6 +80,11 @@ class NPC {
         }
         return steering;
     }
+    die() {
+        this.isAlive = false;
+        this.color = '#808080'; // Gray color for dead NPCs
+        this.velocity = { x: 0, y: 0 }; // Stop movement
+    }
     distance(boid1, boid2) {
         let dx = boid1.x - boid2.x;
         let dy = boid1.y - boid2.y;
@@ -85,18 +95,23 @@ class NPC {
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.size, this.size);
 
-        // Draw direction indicator
+        // Calculate the center of the NPC
+        const centerX = this.x + this.size / 2;
+        const centerY = this.y + this.size / 2;
+
+        // Draw direction indicator from the center
         const directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        const arrowLength = 20; // Adjust as needed
-        const endX = this.x + Math.cos(directionAngle) * arrowLength;
-        const endY = this.y + Math.sin(directionAngle) * arrowLength;
+        const arrowLength = 10; // Adjust as needed
+        const endX = centerX + Math.cos(directionAngle) * arrowLength;
+        const endY = centerY + Math.sin(directionAngle) * arrowLength;
 
         context.strokeStyle = '#fff'; // Arrow color
         context.beginPath();
-        context.moveTo(this.x, this.y);
+        context.moveTo(centerX, centerY);
         context.lineTo(endX, endY);
         context.stroke();
 
+        // Draw outline if selected
         if (this === sim.selectedEntity) {
             context.strokeStyle = '#ff0'; // Highlight color
             context.strokeRect(this.x, this.y, this.size, this.size);
@@ -104,9 +119,8 @@ class NPC {
     }
     interactWithOtherNPCs(npcs) {
         for (let other of npcs) {
-            if (other !== this && isColliding(this, other)) {
-                // Define interaction logic here
-                // Example: exchange items, change behavior, etc.
+            if (other !== this && other.isAlive && isColliding(this, other)) {
+                // Interaction logic here
             }
         }
     }
@@ -127,6 +141,8 @@ class NPC {
         return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
     }
     update(npcs) {
+        if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
+
         const separationWeight = 1.5;
         const alignmentWeight = 1.0;
         const cohesionWeight = 1.0;
@@ -152,7 +168,23 @@ class NPC {
         this.velocity = this.limit(this.velocity, this.maxSpeed);
     
         // Update the NPC's position
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        let newX = this.x + this.velocity.x;
+        let newY = this.y + this.velocity.y;
+
+        // Check if new position is valid
+        if (!isNaN(newX) && !isNaN(newY)) {
+            this.x = newX;
+            this.y = newY;
+        } else {
+            console.error("Invalid position calculated", this);
+        }
+
+        if (this.velocity.x !== 0 || this.velocity.y !== 0) {
+            this.stats.energy -= 0.00001; // Adjust consumption rate as needed
+        }
+
+        if (this.stats.health <= 0) {
+            this.die();
+        }
     }
 }
