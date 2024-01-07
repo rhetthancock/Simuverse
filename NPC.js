@@ -21,7 +21,7 @@ class NPC {
             fear: 0,
         };
         this.perceptionAngle = Math.PI / 2;
-        this.perceptionDistance = 250;
+        this.perceptionDistance = 500;
     }
     applyFlockingBehaviors(npcs) {
         const separationWeight = 1.5;
@@ -223,6 +223,9 @@ class NPC {
             }
         }
     }
+    lerp(start, end, amt) {
+        return (1 - amt) * start + amt * end;
+    }
     limit(vector, max) {
         const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
         if (magnitude > max) {
@@ -259,29 +262,18 @@ class NPC {
     update(npcs, resources, player) {
         if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
 
-        // Example state checks - these would need to be set based on your game logic
         if (this.isFleeing) {
-            // Flee from a perceived threat (player, another NPC, etc.)
-            const threat = sim.player;
-            this.flee(threat); // 'threat' should be defined in your game logic
+            this.flee(player); // Assuming player is the threat
         } else if (this.isResting) {
-            // Rest to recover energy
             this.rest();
         } else if (this.needsResource) {
-            // Seek out and collect resources
             this.collectResource(resources);
         } else {
-            // Default behavior: wandering around
             this.wander();
+            this.applyFlockingBehaviors(npcs);
         }
 
-        // Combine flocking behaviors (separation, alignment, cohesion)
-        this.applyFlockingBehaviors(npcs);
-
-        // Update position based on velocity
         this.updatePosition();
-
-        // Handle energy consumption and check for death
         this.handleEnergyAndHealth();
     }
     updatePosition() {
@@ -298,23 +290,29 @@ class NPC {
         }
     }
     wander() {
-        const wanderRadius = 50;
-        const change = Math.random() * 0.5 - 0.25; // Random change in direction
-        if (!this.target) {
+        const changeInterval = 300; // in frames, adjust for more frequent changes
+        this.wanderCounter = (this.wanderCounter || 0) + 1;
+
+        if (!this.target || this.wanderCounter >= changeInterval) {
+            const wanderRadius = 300; // Radius for wandering area
+            const directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
+            const angleVariance = Math.PI / 4; // 45 degrees variance on either side of current direction
+
+            // Weighted random angle in front of the NPC
+            const weightedAngle = directionAngle + (Math.random() * angleVariance - angleVariance / 2);
+
             this.target = {
-                x: this.x + Math.random() * wanderRadius - wanderRadius / 2,
-                y: this.y + Math.random() * wanderRadius - wanderRadius / 2
+                x: this.x + Math.cos(weightedAngle) * wanderRadius,
+                y: this.y + Math.sin(weightedAngle) * wanderRadius
             };
+            this.wanderCounter = 0;
         }
+
         let desired = this.seek(this.target);
-    
-        // Update velocity towards the target
-        this.velocity.x += desired.x * change;
-        this.velocity.y += desired.y * change;
-    
-        // If the NPC reaches the target, choose a new wandering point
-        if (this.distance(this, this.target) < 10) {
-            this.target = null;
-        }
+        desired = this.limit(desired, this.maxSpeed / 10); // Limit speed for smoother wandering
+
+        // Gradually adjust the current velocity towards the desired velocity
+        this.velocity.x = this.lerp(this.velocity.x, desired.x, 0.05);
+        this.velocity.y = this.lerp(this.velocity.y, desired.y, 0.05);
     }
 }
