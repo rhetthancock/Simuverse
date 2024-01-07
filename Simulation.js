@@ -16,6 +16,7 @@ class Simulation {
             totalNPCs: 0,
             totalResources: 0
         }
+        this.grid = new Grid(100, 100);
         for (let i = 0; i < 10; i++) {
             this.spawnResource();
             this.spawnNPC();

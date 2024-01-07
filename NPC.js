@@ -112,22 +112,28 @@ class NPC {
         const separationWeight = 1.5;
         const alignmentWeight = 1.0;
         const cohesionWeight = 1.0;
-        const maxForce = 5.0;
-
+        const seekWeight = 1.0; // Adjust the weight for seeking behavior
+        const maxForce = 0.05; // Lower maxForce for smoother movement
+    
         let separation = this.calculateSeparation(npcs);
         let alignment = this.calculateAlignment(npcs);
         let cohesion = this.calculateCohesion(npcs);
-
+        let seek = this.seek(sim.player); // Get the seek vector towards the player
+    
+        // Apply limits to forces
         separation = this.limit(separation, maxForce);
         alignment = this.limit(alignment, maxForce);
         cohesion = this.limit(cohesion, maxForce);
-
-        this.velocity.x += separation.x * separationWeight + alignment.x * alignmentWeight + cohesion.x * cohesionWeight;
-        this.velocity.y += separation.y * separationWeight + alignment.y * alignmentWeight + cohesion.y * cohesionWeight;
-
+        seek = this.limit(seek, maxForce);
+    
+        // Combine flocking behaviors and seek behavior
+        this.velocity.x += separation.x * separationWeight + alignment.x * alignmentWeight + cohesion.x * cohesionWeight + seek.x * seekWeight;
+        this.velocity.y += separation.y * separationWeight + alignment.y * alignmentWeight + cohesion.y * cohesionWeight + seek.y * seekWeight;
+    
         // Adjust the velocity if it's too fast
-        this.velocity = this.setMagnitude(this.velocity, this.maxSpeed);
-
+        this.velocity = this.limit(this.velocity, this.maxSpeed);
+    
+        // Update the NPC's position
         this.x += this.velocity.x;
         this.y += this.velocity.y;
     }
