@@ -20,6 +20,8 @@ class NPC {
             happiness: 50,
             fear: 0,
         };
+        this.perceptionAngle = Math.PI / 2;
+        this.perceptionDistance = 250;
     }
     applyFlockingBehaviors(npcs) {
         const separationWeight = 1.5;
@@ -162,11 +164,34 @@ class NPC {
         context.lineTo(endX, endY);
         context.stroke();
 
+        this.drawPerceptionCone(context);
+
         // Draw outline if selected
         if (this === sim.selectedEntity) {
             context.strokeStyle = '#ff0'; // Highlight color
             context.strokeRect(this.x, this.y, this.size, this.size);
         }
+    }
+    drawPerceptionCone(context) {
+        context.beginPath();
+        context.moveTo(this.x + this.size / 2, this.y + this.size / 2); // Center of NPC
+
+        // Calculate left and right boundaries of the cone
+        const directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        const leftAngle = directionAngle - this.perceptionAngle / 2;
+        const rightAngle = directionAngle + this.perceptionAngle / 2;
+
+        context.arc(
+            this.x + this.size / 2, 
+            this.y + this.size / 2, 
+            this.perceptionDistance, 
+            leftAngle, 
+            rightAngle
+        );
+
+        context.closePath();
+        context.fillStyle = "rgba(255, 255, 0, 0.2)"; // Semi-transparent yellow
+        context.fill();
     }
     flee(target) {
         if (!target) return;
