@@ -73,7 +73,7 @@ class Simulation {
             context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 75);
             context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 90);
             context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 105);
-            context.fillText(`Fear: ${this.selectedEntity.emotions.fear}`, 10, 120);
+            context.fillText(`Anxiety: ${this.selectedEntity.emotions.anxiety}`, 10, 120);
         }
     }
     simLoop() {

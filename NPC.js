@@ -14,11 +14,13 @@ class NPC {
         this.perceptionRadius = 40;
         this.stats = {
             health: 100,
-            energy: 100
+            energy: 100,
+            hunger: 100,
+            thirst: 100
         };
         this.emotions = {
             happiness: 50,
-            fear: 0,
+            anxiety: 0
         };
         this.perceptionAngle = Math.PI / 2;
         this.perceptionDistance = 500;
@@ -176,14 +178,42 @@ class NPC {
         }
     }
     checkBehind() {
-        // Flip the direction by 180 degrees
-        this.velocity.x = -this.velocity.x;
-        this.velocity.y = -this.velocity.y;
-        // Perform a quick check and then revert back to original direction
-        setTimeout(() => {
-            this.velocity.x = -this.velocity.x;
-            this.velocity.y = -this.velocity.y;
-        }, 2000); // Check duration
+        let desiredAngle = Math.atan2(-this.velocity.y, -this.velocity.x);
+        let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let newAngle = this.lerp(currentAngle, desiredAngle, 0.01); // Smoother rotation
+
+        this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
+        this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
+
+
+
+        // Calculate the direction opposite to the current one
+        let oppositeDirection = {
+            x: -this.velocity.x,
+            y: -this.velocity.y
+        };
+    
+        // Smoothly rotate to the opposite direction
+        this.velocity = this.setMagnitude(oppositeDirection, this.maxSpeed);
+    
+        // If a threat is detected during this rotation, continue fleeing
+        if (this.isPlayerInPerceptionCone(player)) {
+            this.flee(player);
+        }
+    }
+    checkBehind() {
+        // Smoothly rotate to look behind
+        let desiredAngle = Math.atan2(-this.velocity.y, -this.velocity.x);
+        let currentAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let newAngle = this.lerp(currentAngle, desiredAngle, 0.01); // Adjust this value for rotation speed
+    
+        this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
+        this.velocity.y = Math.sin(newAngle) * this.maxSpeed;
+    
+        // If the NPC sees a threat while checking behind, it should continue fleeing
+        if (this.isPlayerInPerceptionCone(sim.player)) {
+            this.flee(sim.player);
+        }
     }
     die() {
         this.isAlive = false;
@@ -247,29 +277,26 @@ class NPC {
     }
     flee(player) {
         if (this.isPlayerInPerceptionCone(player)) {
-            // Update the last seen position of the player
             this.lastPlayerPosition = { x: player.x, y: player.y };
             this.fleeDuration = this.fleeMaxDuration;
         }
-
+    
         if (this.fleeDuration > 0) {
-            // Calculate the direction away from the last seen position of the player
             let fleeDirection = {
                 x: this.x - this.lastPlayerPosition.x,
                 y: this.y - this.lastPlayerPosition.y
             };
             fleeDirection = this.setMagnitude(fleeDirection, this.fleeSpeed);
-
-            // Apply flee velocity
-            this.velocity.x = fleeDirection.x;
-            this.velocity.y = fleeDirection.y;
-
-            // Decrement flee duration
+    
+            this.fleeAcceleration = 0.002;
+            this.velocity.x = this.lerp(this.velocity.x, fleeDirection.x, this.fleeAcceleration);
+            this.velocity.y = this.lerp(this.velocity.y, fleeDirection.y, this.fleeAcceleration);
+    
             this.fleeDuration--;
         } else {
-            // Reset last player position when flee duration is over
             this.lastPlayerPosition = null;
         }
+        this.emotions.anxiety = Math.min(this.emotions.anxiety + 0.01, 100);
     }
     handleEnergyAndHealth() {
         if (this.velocity.x !== 0 || this.velocity.y !== 0) {
@@ -282,10 +309,19 @@ class NPC {
     }
     interactWithOtherNPCs(npcs) {
         for (let other of npcs) {
-            if (other !== this && other.isAlive && isColliding(this, other)) {
-                // Interaction logic here
+            if (other !== this && other.isAlive && this.isNPCInPerceptionCone(other)) {
+                // Increase happiness and decrease anxiety when interacting
+                this.emotions.happiness = Math.min(this.emotions.happiness + 0.001, 100);
+                this.emotions.anxiety = Math.max(this.emotions.anxiety - 0.001, 0);
             }
         }
+    }
+    isNPCInPerceptionCone(other) {
+        let directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
+        let angleToNPC = Math.atan2(other.y - this.y, other.x - this.x);
+        let angleDifference = Math.abs(directionAngle - angleToNPC);
+        return angleDifference < this.perceptionAngle / 2 && 
+               this.distance(this, other) < this.perceptionDistance;
     }
     isPlayerInPerceptionCone(player) {
         let directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
@@ -358,9 +394,9 @@ class NPC {
         return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
     }
     shouldCheckBehind() {
-        // Only check behind if not fleeing
-        if (!this.fleeDuration) return false;
-        return Math.random() < 0.01; // Example: 1% chance per frame
+        let anxietyFactor = this.emotions.anxiety / 100; // Converts anxiety to a value between 0 and 1
+        let randomCheckChance = 0.01 + anxietyFactor * 0.05; // Increases chance with higher anxiety
+        return Math.random() < randomCheckChance;
     }
     update(npcs, resources, player) {
         if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
@@ -389,6 +425,7 @@ class NPC {
             }
     
             this.updatePosition();
+            this.interactWithOtherNPCs(npcs);
         } else {
             // If no energy, the NPC cannot move or perform actions
             this.velocity.x = 0;
