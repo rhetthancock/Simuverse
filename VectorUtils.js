@@ -2,6 +2,12 @@ class VectorUtils {
     static lerp(start, end, amt) {
         return (1 - amt) * start + amt * end;
     }
+    static lerpVector(v1, v2, t) {
+        return {
+            x: this.lerp(v1.x, v2.x, t),
+            y: this.lerp(v1.y, v2.y, t)
+        };
+    }
     static setMagnitude(vector, magnitude) {
         let len = Math.sqrt(vector.x ** 2 + vector.y ** 2);
         return { x: vector.x / len * magnitude, y: vector.y / len * magnitude };
@@ -17,5 +23,12 @@ class VectorUtils {
             return { x: vector.x / magnitude * max, y: vector.y / magnitude * max };
         }
         return vector;
+    }
+    static normalize(vector) {
+        let magnitude = Math.sqrt(vector.x ** 2 + vector.y ** 2);
+        if (magnitude === 0) {
+            return { x: 0, y: 0 };
+        }
+        return { x: vector.x / magnitude, y: vector.y / magnitude };
     }
 }
