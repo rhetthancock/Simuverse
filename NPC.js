@@ -13,23 +13,20 @@ class NPC {
         this.locomotion = new Locomotion(this);
 
         this.fleeBehavior = new FleeBehavior(this);
-        this.flockingBehavior = new FlockingBehavior();
-        this.interactionBehavior = new InteractionBehavior();
+        this.flockingBehavior = new FlockingBehavior(this);
+        this.interactionBehavior = new InteractionBehavior(this);
     }
 
     determineBehavior(npcs, resources, player) {
-        this.fleeBehavior.flee(player);
-        //this.fleeBehavior.flee(this, player);
-
-        // if (this.metabolism.energy > 50) {
-        //     this.flockingBehavior.applyFlockingBehaviors(this, npcs);
-        //     this.locomotion.wander(this);
-        // } else {
-        //     this.locomotion.rest(this);
-        // }
-        // if (this.locomotion.patrolPoints.length > 0) {
-        //     this.locomotion.patrol(this);
-        // }
+        if (this.metabolism.energy > 50) {
+            this.flockingBehavior.applyFlockingBehaviors(npcs);
+            this.locomotion.wander(this);
+        } else {
+            this.locomotion.rest(this);
+        }
+        if (this.locomotion.patrolPoints.length > 0) {
+            this.locomotion.patrol(this);
+        }
     }
 
     draw(context) {
