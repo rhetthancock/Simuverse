@@ -70,8 +70,8 @@ class Simulation {
 
         if (this.selectedEntity instanceof NPC) {
             // Display NPC stats and inventory
-            context.fillText(`Health: ${this.selectedEntity.stats.health}`, 10, 75);
-            context.fillText(`Energy: ${this.selectedEntity.stats.energy}`, 10, 90);
+            context.fillText(`Health: ${this.selectedEntity.metabolism.health}`, 10, 75);
+            context.fillText(`Energy: ${this.selectedEntity.metabolism.energy}`, 10, 90);
             context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 105);
             context.fillText(`Anxiety: ${this.selectedEntity.emotions.anxiety}`, 10, 120);
         }
@@ -255,7 +255,7 @@ class Simulation {
         this.applyZoneEffects();
         this.npcs.forEach(npc => {
             npc.update(this.npcs , this.resources, this.player);
-            npc.interactWithOtherNPCs(this.npcs);
+            //npc.interactWithOtherNPCs(this.npcs);
         });
         this.checkInteractions();
         this.currentTime = (this.currentTime + 1) % this.dayLength;
