@@ -25,10 +25,8 @@ class VectorUtils {
         return vector;
     }
     static normalize(vector) {
-        let magnitude = Math.sqrt(vector.x ** 2 + vector.y ** 2);
-        if (magnitude === 0) {
-            return { x: 0, y: 0 };
-        }
-        return { x: vector.x / magnitude, y: vector.y / magnitude };
+        let len = Math.sqrt(vector.x ** 2 + vector.y ** 2);
+        if (len === 0) return { x: 0, y: 0 };
+        return { x: vector.x / len, y: vector.y / len };
     }
 }
