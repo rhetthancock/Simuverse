@@ -10,15 +10,15 @@ class MovementBehavior {
         let angleToTarget = Math.atan2(target.y - npc.y, target.x - npc.x);
         let currentAngle = Math.atan2(npc.velocity.y, npc.velocity.x);
         let newAngle = VectorUtils.lerp(currentAngle, angleToTarget, 0.01);
-        npc.velocity.x = Math.cos(newAngle) * npc.stats.velocityMax;
-        npc.velocity.y = Math.sin(newAngle) * npc.stats.velocityMax;
+        npc.velocity.x = Math.cos(newAngle) * npc.locomotion.maxSpeed;
+        npc.velocity.y = Math.sin(newAngle) * npc.locomotion.maxSpeed;
     }
 
     lookAround(npc) {
         let currentAngle = Math.atan2(npc.velocity.y, npc.velocity.x);
         let newAngle = currentAngle + 0.02; // Adjust the value for rotation speed
-        npc.velocity.x = Math.cos(newAngle) * npc.stats.velocityMax;
-        npc.velocity.y = Math.sin(newAngle) * npc.stats.velocityMax;
+        npc.velocity.x = Math.cos(newAngle) * npc.locomotion.maxSpeed;
+        npc.velocity.y = Math.sin(newAngle) * npc.locomotion.maxSpeed;
     }
 
     patrol(npc) {
@@ -31,15 +31,15 @@ class MovementBehavior {
 
     rest(npc) {
         npc.velocity = { x: 0, y: 0 };
-        npc.stats.energy = Math.min(npc.stats.energy + 1, 100);
-        if (npc.stats.energy >= 100) {
+        npc.metabolism.energy = Math.min(npc.metabolism.energy + 1, 100);
+        if (npc.metabolism.energy >= 100) {
             npc.isResting = false;
         }
     }
 
     seek(npc, target) {
         let desired = { x: target.x - npc.x, y: target.y - npc.y };
-        desired = VectorUtils.setMagnitude(desired, npc.stats.velocityMax);
+        desired = VectorUtils.setMagnitude(desired, npc.locomotion.maxSpeed);
         return { x: desired.x - npc.velocity.x, y: desired.y - npc.velocity.y };
     }
 
@@ -62,7 +62,7 @@ class MovementBehavior {
             npc.wanderCounter = 0;
         }
         let desired = this.seek(npc, npc.target);
-        desired = VectorUtils.limit(desired, npc.stats.velocityMax / 10);
+        desired = VectorUtils.limit(desired, npc.locomotion.maxSpeed / 10);
         npc.velocity.x = VectorUtils.lerp(npc.velocity.x, desired.x, 0.05);
         npc.velocity.y = VectorUtils.lerp(npc.velocity.y, desired.y, 0.05);
     }
