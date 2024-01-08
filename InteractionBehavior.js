@@ -1,36 +1,37 @@
 class InteractionBehavior {
-    constructor() {
+    constructor(npc, interactionTimerLimit = 500) {
+        this.npc = npc;
         this.interactionTimer = 0;
-        this.interactionTimerLimit = 500;
+        this.interactionTimerLimit = interactionTimerLimit;
     }
-    interactWithOtherNPCs(npc, npcs) {
+    interactWithOthernpcs(npcs) {
         for (let other of npcs) {
-            if (other !== npc && other.isAlive && npc.isTargetPerceivable(other)) {
+            if (other !== this.npc && other.isAlive && this.npc.isTargetPerceivable(other)) {
                 // Increase happiness and decrease anxiety when interacting
-                npc.emotions.happiness = Math.min(npc.emotions.happiness + 0.001, 100);
-                npc.emotions.anxiety = Math.max(npc.emotions.anxiety - 0.001, 0);
-                npc.signalToInteract(other);
+                this.npc.emotions.happiness = Math.min(this.npc.emotions.happiness + 0.001, 100);
+                this.npc.emotions.anxiety = Math.max(this.npc.emotions.anxiety - 0.001, 0);
+                this.npc.signalToInteract(other);
             }
         }
     }
-    receiveSignal(npc, fromNPC) {
-        npc.isInteracting = true;
+    receiveSignal(sender) {
+        this.npc.isInteracting = true;
         this.interactionTimer = 0;
-        npc.stopMovement();
-        npc.faceTarget(fromNPC);
+        this.npc.stopMovement();
+        this.npc.faceTarget(sender);
     }
-    signalToInteract(npc, otherNPC) {
-        if (npc.isTargetPerceivable(otherNPC)) {
-            otherNPC.interactionBehavior.receiveSignal(otherNPC, npc);
+    signalToInteract(target) {
+        if (this.npc.isTargetPerceivable(target)) {
+            target.interactionBehavior.receiveSignal(this.npc);
         }
     }
-    updateInteraction(npc) {
-        if (npc.isInteracting) {
+    updateInteraction() {
+        if (this.npc.isInteracting) {
             this.interactionTimer++;
             if (this.interactionTimer >= this.interactionTimerLimit) {
-                npc.isInteracting = false;
+                this.npc.isInteracting = false;
                 this.interactionTimer = 0;
-                npc.wanderBehavior.wander(npc);
+                this.npc.wanderBehavior.wander(this.npc);
             }
         }
     }
