@@ -1,6 +1,5 @@
-class NPC extends Perception {
+class NPC {
     constructor(x, y) {
-        super();
         this.x = x;
         this.y = y;
         this.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
@@ -11,22 +10,26 @@ class NPC extends Perception {
         this.metabolism = new Metabolism();
         this.emotions = new Emotions();
         this.memory = new Memory();
-        this.locomotion = new Locomotion();
+        this.locomotion = new Locomotion(this);
 
+        this.fleeBehavior = new FleeBehavior();
         this.flockingBehavior = new FlockingBehavior();
         this.interactionBehavior = new InteractionBehavior();
     }
 
     determineBehavior(npcs, resources, player) {
-        if (this.metabolism.energy > 50) {
-            this.flockingBehavior.applyFlockingBehaviors(this, npcs);
-            this.locomotion.wander(this);
-        } else {
-            this.locomotion.rest(this);
-        }
-        if (this.locomotion.patrolPoints.length > 0) {
-            this.locomotion.patrol(this);
-        }
+        this.locomotion.wander();
+        //this.fleeBehavior.flee(this, player);
+
+        // if (this.metabolism.energy > 50) {
+        //     this.flockingBehavior.applyFlockingBehaviors(this, npcs);
+        //     this.locomotion.wander(this);
+        // } else {
+        //     this.locomotion.rest(this);
+        // }
+        // if (this.locomotion.patrolPoints.length > 0) {
+        //     this.locomotion.patrol(this);
+        // }
     }
 
     draw(context) {

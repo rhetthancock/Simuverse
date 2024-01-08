@@ -1,26 +1,26 @@
 class FleeBehavior {
-    constructor(fleeAcceleration = 0.002, fleeMaxDuration = 500) {
+    constructor(fleeAcceleration = 0.002, fleeMaxDuration = 300) {
         this.fleeAcceleration = fleeAcceleration;
         this.fleeMaxDuration = fleeMaxDuration;
     }
     flee(npc, threat) {
-        if (npc.isTargetPerceivable(threat)) {
-            this.lastThreatPosition = { x: threat.x, y: threat.y };
-            this.fleeDuration = this.fleeMaxDuration;
+        if (npc.perception.isTargetPerceivable(npc, threat)) {
+            npc.lastThreatPosition = { x: threat.x, y: threat.y };
+            npc.fleeDuration = this.fleeMaxDuration;
         }
-        if (this.fleeDuration > 0) {
+        if (npc.fleeDuration > 0) {
             let fleeDirection = {
-                x: npc.x - this.lastThreatPosition.x,
-                y: npc.y - this.lastThreatPosition.y
+                x: npc.x - npc.lastThreatPosition.x,
+                y: npc.y - npc.lastThreatPosition.y
             };
-            fleeDirection = VectorUtils.setMagnitude(fleeDirection, npc.maxSpeed);
+            fleeDirection = VectorUtils.setMagnitude(fleeDirection, npc.locomotion.maxSpeed);
             npc.velocity.x = VectorUtils.lerp(npc.velocity.x, fleeDirection.x, this.fleeAcceleration);
             npc.velocity.y = VectorUtils.lerp(npc.velocity.y, fleeDirection.y, this.fleeAcceleration);
-            this.fleeDuration--;
+            npc.fleeDuration--;
         } else {
-            this.lastThreatPosition = null;
+            npc.lastThreatPosition = null;
         }
-        npc.emotions.anxiety = Math.min(this.emotions.anxiety + 0.01, 100);
+        npc.emotions.anxiety = Math.min(npc.emotions.anxiety + 0.01, 100);
     }
     hide(npc) {
         // TODO: Implement NPC hiding
