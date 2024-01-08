@@ -12,14 +12,6 @@ class NPC {
         this.memory = new Memory();
     }
 
-    determineBehavior(npcs, resources, player) {
-        if(this.perception.isTargetPerceivable(player)) {
-            this.locomotion.seek(player);
-        } else {
-            this.locomotion.wander();
-        }
-    }
-
     draw(context) {
         this.perception.drawPerceptionCone(context);
 
@@ -54,7 +46,11 @@ class NPC {
         if (!this.metabolism.isAlive || isNaN(this.x) || isNaN(this.y)) return;
         this.metabolism.adjustEnergyUsage(this.velocity, this.locomotion.walkSpeed, this.locomotion.runSpeed, this.locomotion.sprintSpeed);
         if (this.metabolism.energy > 0) {
-            this.determineBehavior(npcs, resources, player);
+            if(this.perception.isTargetPerceivable(player)) {
+                this.locomotion.seek(player);
+            } else {
+                this.locomotion.wander();
+            }
         } else {
             this.velocity.x = 0;
             this.velocity.y = 0;
