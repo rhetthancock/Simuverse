@@ -46,7 +46,7 @@ class Locomotion {
         }
     }
 
-    seek(target, stopDistance = 80) {
+    seek(target, stopDistance = 150) {
         let desired = { x: target.x - this.npc.x, y: target.y - this.npc.y };
         let distance = Math.sqrt(desired.x ** 2 + desired.y ** 2);
         if (distance < stopDistance) {

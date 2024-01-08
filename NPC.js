@@ -26,6 +26,8 @@ class NPC {
     }
 
     draw(context) {
+        this.perception.drawPerceptionCone(this, context);
+
         // Draw NPC
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.size, this.size);
@@ -45,8 +47,6 @@ class NPC {
         context.moveTo(centerX, centerY);
         context.lineTo(endX, endY);
         context.stroke();
-
-        this.perception.drawPerceptionCone(this, context);
 
         // Draw outline if selected
         if (this === sim.selectedEntity) {
