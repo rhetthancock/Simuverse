@@ -14,29 +14,19 @@ class NPC extends Perception {
         this.locomotion = new Locomotion();
 
         this.flockingBehavior = new FlockingBehavior();
-        this.movementBehavior = new MovementBehavior();
         this.interactionBehavior = new InteractionBehavior();
     }
 
     determineBehavior(npcs, resources, player) {
-        // Example implementation of behavior determination
         if (this.metabolism.energy > 50) {
-            // Active behaviors like wandering or flocking
             this.flockingBehavior.applyFlockingBehaviors(this, npcs);
-            this.movementBehavior.wander(this);
+            this.locomotion.wander(this);
         } else {
-            // Passive or low-energy behaviors like resting
-            this.movementBehavior.rest(this);
+            this.locomotion.rest(this);
         }
-
-        // Additional behaviors like patrolling or interacting
         if (this.locomotion.patrolPoints.length > 0) {
             this.locomotion.patrol(this);
         }
-
-        // Interactions with other NPCs or players
-        this.interactionBehavior.interactWithNPCs(this, npcs);
-        // Add more as needed...
     }
 
     draw(context) {
@@ -79,7 +69,9 @@ class NPC extends Perception {
             this.velocity.y = 0;
         }
         this.memory.observeAndRememberResources(this, resources);
-        if (this.isResting) this.movementBehavior.rest(this);
+        if (this.isResting) {
+            this.locomotion.rest(this);
+        }
         this.updatePosition();
         this.metabolism.handleHealth();
     }
