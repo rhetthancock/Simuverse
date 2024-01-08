@@ -1,34 +1,35 @@
 class FleeBehavior {
-    constructor(fleeAcceleration = 0.002, fleeMaxDuration = 300) {
+    constructor(npc, fleeAcceleration = 0.002, fleeMaxDuration = 300) {
+        this.npc = npc;
         this.fleeAcceleration = fleeAcceleration;
         this.fleeMaxDuration = fleeMaxDuration;
     }
-    flee(npc, threat) {
-        if (npc.perception.isTargetPerceivable(npc, threat)) {
-            npc.lastThreatPosition = { x: threat.x, y: threat.y };
-            npc.fleeDuration = this.fleeMaxDuration;
+    flee(threat) {
+        if (this.npc.perception.isTargetPerceivable(this.npc, threat)) {
+            this.npc.lastThreatPosition = { x: threat.x, y: threat.y };
+            this.npc.fleeDuration = this.fleeMaxDuration;
         }
-        if (npc.fleeDuration > 0) {
+        if (this.npc.fleeDuration > 0) {
             let fleeDirection = {
-                x: npc.x - npc.lastThreatPosition.x,
-                y: npc.y - npc.lastThreatPosition.y
+                x: this.npc.x - this.npc.lastThreatPosition.x,
+                y: this.npc.y - this.npc.lastThreatPosition.y
             };
-            fleeDirection = VectorUtils.setMagnitude(fleeDirection, npc.locomotion.maxSpeed);
-            npc.velocity.x = VectorUtils.lerp(npc.velocity.x, fleeDirection.x, this.fleeAcceleration);
-            npc.velocity.y = VectorUtils.lerp(npc.velocity.y, fleeDirection.y, this.fleeAcceleration);
-            npc.fleeDuration--;
+            fleeDirection = VectorUtils.setMagnitude(fleeDirection, this.npc.locomotion.maxSpeed);
+            this.npc.velocity.x = VectorUtils.lerp(this.npc.velocity.x, fleeDirection.x, this.fleeAcceleration);
+            this.npc.velocity.y = VectorUtils.lerp(this.npc.velocity.y, fleeDirection.y, this.fleeAcceleration);
+            this.npc.fleeDuration--;
         } else {
-            npc.lastThreatPosition = null;
+            this.npc.lastThreatPosition = null;
         }
-        npc.emotions.anxiety = Math.min(npc.emotions.anxiety + 0.01, 100);
+        this.npc.emotions.anxiety = Math.min(this.npc.emotions.anxiety + 0.01, 100);
     }
-    hide(npc) {
-        // TODO: Implement NPC hiding
+    hide() {
+        // TODO: Implement npc hiding
     }
-    checkBehind(npc) {
+    checkBehind() {
         const rotationSpeed = 0.01;
-        let desiredAngle = Math.atan2(-npc.velocity.y, -npc.velocity.x);
-        let currentAngle = Math.atan2(npc.velocity.y, npc.velocity.x);
+        let desiredAngle = Math.atan2(-this.npc.velocity.y, -this.npc.velocity.x);
+        let currentAngle = Math.atan2(this.npc.velocity.y, this.npc.velocity.x);
         let newAngle = VectorUtils.lerp(currentAngle, desiredAngle, rotationSpeed);
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;

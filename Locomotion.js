@@ -14,11 +14,13 @@ class Locomotion {
     }
 
     faceTarget(target) {
+        // Calculate the angle to the target
         let angleToTarget = Math.atan2(target.y - this.npc.y, target.x - this.npc.x);
-        let currentAngle = Math.atan2(this.npc.velocity.y, this.npc.velocity.x);
-        let newAngle = VectorUtils.lerp(currentAngle, angleToTarget, 0.01);
-        this.npc.velocity.x = Math.cos(newAngle) * this.maxSpeed;
-        this.npc.velocity.y = Math.sin(newAngle) * this.maxSpeed;
+
+        // Update the NPC's velocity direction without changing its speed
+        let speed = Math.sqrt(this.npc.velocity.x ** 2 + this.npc.velocity.y ** 2);
+        this.npc.velocity.x = Math.cos(angleToTarget) * speed;
+        this.npc.velocity.y = Math.sin(angleToTarget) * speed;
     }
 
     lookAround() {

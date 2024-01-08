@@ -12,13 +12,13 @@ class NPC {
         this.memory = new Memory();
         this.locomotion = new Locomotion(this);
 
-        this.fleeBehavior = new FleeBehavior();
+        this.fleeBehavior = new FleeBehavior(this);
         this.flockingBehavior = new FlockingBehavior();
         this.interactionBehavior = new InteractionBehavior();
     }
 
     determineBehavior(npcs, resources, player) {
-        this.locomotion.wander();
+        this.fleeBehavior.flee(player);
         //this.fleeBehavior.flee(this, player);
 
         // if (this.metabolism.energy > 50) {
