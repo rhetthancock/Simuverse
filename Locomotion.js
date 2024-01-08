@@ -17,13 +17,9 @@ class Locomotion {
     }
 
     faceTarget(target) {
-        // Calculate the angle to the target
         let angleToTarget = Math.atan2(target.y - this.npc.y, target.x - this.npc.x);
-
-        // Update the NPC's velocity direction without changing its speed
-        let speed = Math.sqrt(this.npc.velocity.x ** 2 + this.npc.velocity.y ** 2);
-        this.npc.velocity.x = Math.cos(angleToTarget) * speed;
-        this.npc.velocity.y = Math.sin(angleToTarget) * speed;
+        this.npc.velocity.x = Math.cos(angleToTarget) * this.maxSpeed;
+        this.npc.velocity.y = Math.sin(angleToTarget) * this.maxSpeed;
     }
 
     lookAround() {
@@ -49,17 +45,24 @@ class Locomotion {
         }
     }
 
-    seek(target) {
+    seek(target, stopDistance = 80) {
         let desired = { x: target.x - this.npc.x, y: target.y - this.npc.y };
+        let distance = Math.sqrt(desired.x ** 2 + desired.y ** 2);
+        if (distance < stopDistance) {
+            this.faceTarget(target);
+            this.stopMovement();
+            return;
+        }
         desired = VectorUtils.setMagnitude(desired, this.maxSpeed);
-        return { x: desired.x - this.npc.velocity.x, y: desired.y - this.npc.velocity.y };
+        this.npc.velocity.x += (desired.x - this.npc.velocity.x) * 0.1;
+        this.npc.velocity.y += (desired.y - this.npc.velocity.y) * 0.1;
     }
 
     stopMovement() {
         let velocity = this.npc.velocity;
         if (velocity.x !== 0 || velocity.y !== 0) {
-            this.npc.velocity.x = VectorUtils.lerp(velocity.x, 0, 0.05);
-            this.npc.velocity.y = VectorUtils.lerp(velocity.y, 0, 0.05);
+            this.npc.velocity.x = VectorUtils.lerp(velocity.x, 0, 0.15);
+            this.npc.velocity.y = VectorUtils.lerp(velocity.y, 0, 0.15);
         }
     }    
 

@@ -13,7 +13,7 @@ class NPC {
     }
 
     determineBehavior(npcs, resources, player) {
-        this.locomotion.fleeBehavior.flee(player);
+        this.locomotion.seek(player);
         // if (this.metabolism.energy > 50) {
         //     this.flockingBehavior.applyFlockingBehaviors(npcs);
         //     this.locomotion.wander(this);
