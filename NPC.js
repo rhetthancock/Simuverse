@@ -5,28 +5,24 @@ class NPC {
         this.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
         this.size = (Math.random() * 20) + 10;
         this.velocity = { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 };
-
         this.perception = new Perception();
         this.metabolism = new Metabolism();
         this.emotions = new Emotions();
         this.memory = new Memory();
         this.locomotion = new Locomotion(this);
-
-        this.fleeBehavior = new FleeBehavior(this);
-        this.flockingBehavior = new FlockingBehavior(this);
-        this.interactionBehavior = new InteractionBehavior(this);
     }
 
     determineBehavior(npcs, resources, player) {
-        if (this.metabolism.energy > 50) {
-            this.flockingBehavior.applyFlockingBehaviors(npcs);
-            this.locomotion.wander(this);
-        } else {
-            this.locomotion.rest(this);
-        }
-        if (this.locomotion.patrolPoints.length > 0) {
-            this.locomotion.patrol(this);
-        }
+        this.locomotion.fleeBehavior.flee(player);
+        // if (this.metabolism.energy > 50) {
+        //     this.flockingBehavior.applyFlockingBehaviors(npcs);
+        //     this.locomotion.wander(this);
+        // } else {
+        //     this.locomotion.rest(this);
+        // }
+        // if (this.locomotion.patrolPoints.length > 0) {
+        //     this.locomotion.patrol(this);
+        // }
     }
 
     draw(context) {

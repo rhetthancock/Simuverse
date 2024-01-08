@@ -1,5 +1,5 @@
 class FleeBehavior {
-    constructor(npc, fleeAcceleration = 0.002, fleeMaxDuration = 300) {
+    constructor(npc, fleeAcceleration = 0.005, fleeMaxDuration = 300) {
         this.npc = npc;
         this.fleeAcceleration = fleeAcceleration;
         this.fleeMaxDuration = fleeMaxDuration;
@@ -22,9 +22,6 @@ class FleeBehavior {
             this.npc.lastThreatPosition = null;
         }
         this.npc.emotions.anxiety = Math.min(this.npc.emotions.anxiety + 0.01, 100);
-    }
-    hide() {
-        // TODO: Implement npc hiding
     }
     checkBehind() {
         const rotationSpeed = 0.01;

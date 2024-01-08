@@ -11,6 +11,9 @@ class Locomotion {
         this.wanderChangeInterval = 300; // frames
         this.wanderRadius = 300;
         this.wanderAngleVariance = Math.PI / 4; // 45 degrees
+        this.fleeBehavior = new FleeBehavior(npc);
+        this.flockingBehavior = new FlockingBehavior(npc);
+        this.interactionBehavior = new InteractionBehavior(npc);
     }
 
     faceTarget(target) {
