@@ -3,16 +3,16 @@ class InteractionBehavior {
         this.interactionTimer = 0;
         this.interactionTimerLimit = 500;
     }
-    // interactWithOtherNPCs(npcs) {
-    //     for (let other of npcs) {
-    //         if (other !== this && other.isAlive && this.isTargetPerceivable(other)) {
-    //             // Increase happiness and decrease anxiety when interacting
-    //             this.emotions.happiness = Math.min(this.emotions.happiness + 0.001, 100);
-    //             this.emotions.anxiety = Math.max(this.emotions.anxiety - 0.001, 0);
-    //             this.signalToInteract(other);
-    //         }
-    //     }
-    // }
+    interactWithOtherNPCs(npc, npcs) {
+        for (let other of npcs) {
+            if (other !== npc && other.isAlive && npc.isTargetPerceivable(other)) {
+                // Increase happiness and decrease anxiety when interacting
+                npc.emotions.happiness = Math.min(npc.emotions.happiness + 0.001, 100);
+                npc.emotions.anxiety = Math.max(npc.emotions.anxiety - 0.001, 0);
+                npc.signalToInteract(other);
+            }
+        }
+    }
     receiveSignal(npc, fromNPC) {
         npc.isInteracting = true;
         this.interactionTimer = 0;
