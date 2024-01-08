@@ -19,22 +19,6 @@ class NPC {
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.size, this.size);
 
-        // Calculate the center of the NPC
-        const centerX = this.x + this.size / 2;
-        const centerY = this.y + this.size / 2;
-
-        // Draw direction indicator from the center
-        const directionAngle = Math.atan2(this.velocity.y, this.velocity.x);
-        const arrowLength = 10; // Adjust as needed
-        const endX = centerX + Math.cos(directionAngle) * arrowLength;
-        const endY = centerY + Math.sin(directionAngle) * arrowLength;
-
-        context.strokeStyle = '#fff'; // Arrow color
-        context.beginPath();
-        context.moveTo(centerX, centerY);
-        context.lineTo(endX, endY);
-        context.stroke();
-
         // Draw outline if selected
         if (this === sim.selectedEntity) {
             context.strokeStyle = '#ff0'; // Highlight color

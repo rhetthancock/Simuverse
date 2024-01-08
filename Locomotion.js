@@ -8,7 +8,7 @@ class Locomotion {
         this.patrolPoints = [];
         this.currentPatrolPoint = 0;
         this.wanderCounter = 0;
-        this.wanderChangeInterval = 50; // frames
+        this.wanderChangeInterval = 200; // frames
         this.wanderRadius = 500;
         this.wanderAngleVariance = Math.PI / 4; // 45 degrees
         this.fleeBehavior = new FleeBehavior(npc);
@@ -47,10 +47,10 @@ class Locomotion {
     }
 
     seek(target, stopDistance = 200) {
+        this.faceTarget(target);
         let desired = { x: target.x - this.npc.x, y: target.y - this.npc.y };
         let distance = Math.sqrt(desired.x ** 2 + desired.y ** 2);
         if (distance < stopDistance) {
-            this.faceTarget(target);
             this.stopMovement();
             return;
         }
@@ -66,7 +66,7 @@ class Locomotion {
             this.npc.velocity.y = VectorUtils.lerp(velocity.y, 0, 0.15);
         }
     }
-    
+
     wander() {
         this.wanderCounter = (this.wanderCounter || 0) + 1;
         if (!this.wanderTarget || this.wanderCounter >= this.wanderChangeInterval) {
@@ -78,6 +78,15 @@ class Locomotion {
             };
             this.wanderCounter = 0;
         }
-        this.seek(this.wanderTarget);
+        // Gradually adjust the direction towards the wander target
+        let desiredDirection = { x: this.wanderTarget.x - this.npc.x, y: this.wanderTarget.y - this.npc.y };
+        desiredDirection = VectorUtils.normalize(desiredDirection);
+        let currentDirection = VectorUtils.normalize(this.npc.velocity);
+        let turnRate = 0.05;
+        let newDirection = VectorUtils.lerpVector(currentDirection, desiredDirection, turnRate);
+        // Update the NPC's velocity with the new direction
+        let speed = Math.sqrt(this.npc.velocity.x ** 2 + this.npc.velocity.y ** 2);
+        this.npc.velocity.x = newDirection.x * speed;
+        this.npc.velocity.y = newDirection.y * speed;
     }
 }
