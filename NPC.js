@@ -18,16 +18,6 @@ class NPC {
         } else {
             this.locomotion.wander();
         }
-        
-        // if (this.metabolism.energy > 50) {
-        //     this.flockingBehavior.applyFlockingBehaviors(npcs);
-        //     this.locomotion.wander(this);
-        // } else {
-        //     this.locomotion.rest(this);
-        // }
-        // if (this.locomotion.patrolPoints.length > 0) {
-        //     this.locomotion.patrol(this);
-        // }
     }
 
     draw(context) {

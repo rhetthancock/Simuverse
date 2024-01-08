@@ -46,7 +46,7 @@ class Locomotion {
         }
     }
 
-    seek(target, stopDistance = 150) {
+    seek(target, stopDistance = 200) {
         let desired = { x: target.x - this.npc.x, y: target.y - this.npc.y };
         let distance = Math.sqrt(desired.x ** 2 + desired.y ** 2);
         if (distance < stopDistance) {
@@ -65,7 +65,8 @@ class Locomotion {
             this.npc.velocity.x = VectorUtils.lerp(velocity.x, 0, 0.15);
             this.npc.velocity.y = VectorUtils.lerp(velocity.y, 0, 0.15);
         }
-    }    
+    }
+    
     wander() {
         this.wanderCounter = (this.wanderCounter || 0) + 1;
         if (!this.wanderTarget || this.wanderCounter >= this.wanderChangeInterval) {
