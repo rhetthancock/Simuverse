@@ -17,7 +17,7 @@ class FlockingBehavior {
         npc.velocity.x += separation.x * this.separationWeight + alignment.x * this.alignmentWeight + cohesion.x * this.cohesionWeight;
         npc.velocity.y += separation.y * this.separationWeight + alignment.y * this.alignmentWeight + cohesion.y * this.cohesionWeight;
         // Adjust the velocity if it's too fast
-        npc.velocity = VectorUtils.limit(npc.velocity, npc.stats.velocityMax);
+        npc.velocity = VectorUtils.limit(npc.velocity, npc.locomotion.maxSpeed);
     }
     calculateAlignment(npc, npcs) {
         let average = { x: 0, y: 0 };
@@ -32,7 +32,7 @@ class FlockingBehavior {
         if (total > 0) {
             average.x /= total;
             average.y /= total;
-            average = VectorUtils.setMagnitude(average, npc.stats.velocityMax);
+            average = VectorUtils.setMagnitude(average, npc.locomotion.maxSpeed);
             let steer = { x: average.x - npc.velocity.x, y: average.y - npc.velocity.y };
             return steer;
         } else {
@@ -75,7 +75,7 @@ class FlockingBehavior {
             steering.x /= total;
             steering.y /= total;
             // Set magnitude to maxSpeed
-            steering = VectorUtils.setMagnitude(steering, npc.stats.velocityMax);
+            steering = VectorUtils.setMagnitude(steering, npc.locomotion.maxSpeed);
             // Subtract current velocity
             steering.x -= npc.velocity.x;
             steering.y -= npc.velocity.y;

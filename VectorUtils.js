@@ -11,4 +11,11 @@ class VectorUtils {
         let dy = obj1.y - obj2.y;
         return Math.sqrt(dx ** 2 + dy ** 2);
     }
+    static limit(vector, max) {
+        const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        if (magnitude > max) {
+            return { x: vector.x / magnitude * max, y: vector.y / magnitude * max };
+        }
+        return vector;
+    }
 }

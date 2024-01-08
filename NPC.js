@@ -60,7 +60,7 @@ class NPC extends Perception {
     }
 
     update(npcs, resources, player) {
-        if (!this.isAlive || isNaN(this.x) || isNaN(this.y)) return;
+        if (!this.metabolism.isAlive || isNaN(this.x) || isNaN(this.y)) return;
         this.metabolism.adjustEnergyUsage(this.velocity, this.locomotion.walkSpeed, this.locomotion.runSpeed, this.locomotion.sprintSpeed);
         if (this.metabolism.energy > 0) {
             this.determineBehavior(npcs, resources, player);
