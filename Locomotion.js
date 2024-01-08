@@ -8,8 +8,8 @@ class Locomotion {
         this.patrolPoints = [];
         this.currentPatrolPoint = 0;
         this.wanderCounter = 0;
-        this.wanderChangeInterval = 300; // frames
-        this.wanderRadius = 300;
+        this.wanderChangeInterval = 50; // frames
+        this.wanderRadius = 500;
         this.wanderAngleVariance = Math.PI / 4; // 45 degrees
         this.fleeBehavior = new FleeBehavior(npc);
         this.flockingBehavior = new FlockingBehavior(npc);
@@ -66,7 +66,6 @@ class Locomotion {
             this.npc.velocity.y = VectorUtils.lerp(velocity.y, 0, 0.15);
         }
     }    
-
     wander() {
         this.wanderCounter = (this.wanderCounter || 0) + 1;
         if (!this.wanderTarget || this.wanderCounter >= this.wanderChangeInterval) {
@@ -78,9 +77,6 @@ class Locomotion {
             };
             this.wanderCounter = 0;
         }
-        let desired = this.seek(this.wanderTarget);
-        desired = VectorUtils.limit(desired, this.maxSpeed / 10);
-        this.npc.velocity.x = VectorUtils.lerp(this.npc.velocity.x, desired.x, 0.05);
-        this.npc.velocity.y = VectorUtils.lerp(this.npc.velocity.y, desired.y, 0.05);
+        this.seek(this.wanderTarget);
     }
 }

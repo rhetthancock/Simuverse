@@ -5,7 +5,7 @@ class FleeBehavior {
         this.fleeMaxDuration = fleeMaxDuration;
     }
     flee(threat) {
-        if (this.npc.perception.isTargetPerceivable(this.npc, threat)) {
+        if (this.npc.perception.isTargetPerceivable(threat)) {
             this.npc.lastThreatPosition = { x: threat.x, y: threat.y };
             this.npc.fleeDuration = this.fleeMaxDuration;
         }
