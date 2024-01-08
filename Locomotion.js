@@ -18,8 +18,9 @@ class Locomotion {
 
     faceTarget(target) {
         let angleToTarget = Math.atan2(target.y - this.npc.y, target.x - this.npc.x);
-        this.npc.velocity.x = Math.cos(angleToTarget) * this.maxSpeed;
-        this.npc.velocity.y = Math.sin(angleToTarget) * this.maxSpeed;
+        let speed = Math.sqrt(this.npc.velocity.x ** 2 + this.npc.velocity.y ** 2);
+        this.npc.velocity.x = Math.cos(angleToTarget) * speed;
+        this.npc.velocity.y = Math.sin(angleToTarget) * speed;
     }
 
     lookAround() {
