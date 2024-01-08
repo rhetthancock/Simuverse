@@ -6,6 +6,7 @@ class FlockingBehavior {
         this.cohesionWeight = cohesionWeight;
         this.maxForce = maxForce;
     }
+
     applyFlockingBehaviors(npcs) {
         let separation = this.calculateSeparation(npcs);
         let alignment = this.calculateAlignment(npcs);
@@ -20,6 +21,7 @@ class FlockingBehavior {
         // Adjust the velocity if it's too fast
         this.npc.velocity = VectorUtils.limit(this.npc.velocity, this.npc.locomotion.maxSpeed);
     }
+
     calculateAlignment(npcs) {
         let average = { x: 0, y: 0 };
         let total = 0;
@@ -40,6 +42,7 @@ class FlockingBehavior {
             return { x: 0, y: 0 };
         }
     }
+
     calculateCohesion(npcs) {
         let average = { x: 0, y: 0 };
         let total = 0;
@@ -58,6 +61,7 @@ class FlockingBehavior {
             return { x: 0, y: 0 };
         }
     }
+    
     calculateSeparation(npcs) {
         let steering = { x: 0, y: 0 };
         let total = 0;
