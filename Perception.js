@@ -1,5 +1,5 @@
 class Perception {
-    constructor(npc, perceptionAngle = Math.PI / 2, perceptionRadius = 40, perceptionDistance = 500) {
+    constructor(npc, perceptionAngle = Math.PI / 1.25, perceptionRadius = 40, perceptionDistance = 500) {
         this.npc = npc;
         this.perceptionColor = "rgba(128, 128, 128, 0.2)";
         this.perceptionAngle = perceptionAngle;
