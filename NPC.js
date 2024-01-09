@@ -21,9 +21,37 @@ class NPC {
 
         // Draw outline if selected
         if (this === sim.selectedEntity) {
-            context.strokeStyle = '#ff0'; // Highlight color
+            context.strokeStyle = '#fff'; // Highlight color
             context.strokeRect(this.x, this.y, this.size, this.size);
+            this.drawHealthBar(context);
+            this.drawEnergyBar(context);
         }
+    }
+
+    drawHealthBar(context) {
+        const barWidth = this.size;
+        const barHeight = 5;
+        const healthPercentage = this.metabolism.health / 100;
+        // Draw background of the health bar
+        context.fillStyle = '#555';
+        context.fillRect(this.x, this.y - 2 * barHeight - 12, barWidth, barHeight);
+        // Draw the health bar
+        context.fillStyle = '#f00';
+        context.fillRect(this.x, this.y - 2 * barHeight - 12, barWidth * healthPercentage, barHeight);
+
+    }
+
+    drawEnergyBar(context) {
+        const barWidth = this.size;
+        const barHeight = 5;
+        const energyPercentage = this.metabolism.energy / 100;
+        // Draw background of the energy bar
+        context.fillStyle = '#555';
+        context.fillRect(this.x, this.y - barHeight - 10, barWidth, barHeight);
+        // Draw the energy bar
+        context.fillStyle = '#ff0';
+        context.fillRect(this.x, this.y - barHeight - 10, barWidth * energyPercentage, barHeight);
+
     }
 
     update(npcs, resources, player) {
