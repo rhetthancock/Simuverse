@@ -68,25 +68,37 @@ class Locomotion {
     }
 
     wander() {
-        this.wanderCounter = (this.wanderCounter || 0) + 1;
+        // Increment the wander counter with a small random component for irregularity
+        this.wanderCounter += 1 + Math.random() * 0.2;
+
         if (!this.wanderTarget || this.wanderCounter >= this.wanderChangeInterval) {
+            // Reset the wander counter and assign a new random change interval
+            this.wanderCounter = 0;
+            this.wanderChangeInterval = 150 + Math.floor(Math.random() * 100);
+
+            // Calculate a new wander target as before
             const directionAngle = Math.atan2(this.npc.velocity.y, this.npc.velocity.x);
             const weightedAngle = directionAngle + (Math.random() * this.wanderAngleVariance - this.wanderAngleVariance / 2);
             this.wanderTarget = {
                 x: this.npc.x + Math.cos(weightedAngle) * this.wanderRadius,
                 y: this.npc.y + Math.sin(weightedAngle) * this.wanderRadius
             };
-            this.wanderCounter = 0;
         }
-        // Gradually adjust the direction towards the wander target
+
+        // Gradually adjust the direction towards the wander target using the lerpVector method
+        // Ensure the lerpVector method is correctly implemented in the VectorUtils class
         let desiredDirection = { x: this.wanderTarget.x - this.npc.x, y: this.wanderTarget.y - this.npc.y };
         desiredDirection = VectorUtils.normalize(desiredDirection);
         let currentDirection = VectorUtils.normalize(this.npc.velocity);
-        let turnRate = 0.05;
+        let turnRate = 0.05; // Adjust the turn rate for smoothness of the turn
         let newDirection = VectorUtils.lerpVector(currentDirection, desiredDirection, turnRate);
+
         // Update the NPC's velocity with the new direction
         let speed = Math.sqrt(this.npc.velocity.x ** 2 + this.npc.velocity.y ** 2);
-        this.npc.velocity.x = newDirection.x * speed;
-        this.npc.velocity.y = newDirection.y * speed;
+        // Set the new velocity if the new direction is valid
+        if (newDirection) {
+            this.npc.velocity.x = newDirection.x * speed;
+            this.npc.velocity.y = newDirection.y * speed;
+        }
     }
 }
