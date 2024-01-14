@@ -13,7 +13,9 @@ class NPC {
     }
 
     draw(context) {
-        this.perception.drawPerceptionCone(context);
+        if(this.metabolism.isAlive) {
+            this.perception.drawPerceptionCone(context);
+        }
 
         // Draw NPC
         context.fillStyle = this.color;
@@ -64,8 +66,7 @@ class NPC {
                 this.locomotion.wander();
             }
         } else {
-            this.velocity.x = 0;
-            this.velocity.y = 0;
+            this.locomotion.stopMovement();
         }
         this.memory.observeAndRememberResources(this, resources);
         if (this.isResting) {
