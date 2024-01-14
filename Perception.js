@@ -26,8 +26,8 @@ class Perception {
             leftAngle, 
             rightAngle
         );
-        context.closePath();
         context.fillStyle = this.perceptionColor;
         context.fill();
+        context.closePath();
     }
 }
