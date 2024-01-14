@@ -19,14 +19,14 @@ class NPC {
 
         // Draw NPC
         context.beginPath();
-        context.arc(this.x + this.size / 2, this.y + this.size / 2, this.size, 0, 2 * Math.PI);
+        context.arc(this.x + this.size / 2, this.y + this.size / 2, this.size / 2, 0, 2 * Math.PI);
         context.fillStyle = this.color;
         context.fill();
 
         // Draw outline if selected
         if (this === sim.selectedEntity) {
             context.strokeStyle = '#fff'; // Highlight color
-            context.strokeRect(this.x, this.y, this.size, this.size);
+            context.stroke();
             this.drawHealthBar(context);
             this.drawEnergyBar(context);
         }
