@@ -18,8 +18,8 @@ class NPC {
     draw(context) {
         if(this.metabolism.isAlive) {
             this.perception.drawPerceptionCone(context);
-            this.drawHands(context);
         }
+        this.drawHands(context);
 
         // Draw NPC
         context.beginPath();
