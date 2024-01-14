@@ -1,37 +1,37 @@
 class InteractionBehavior {
-    constructor(npc, interactionTimerLimit = 500) {
-        this.npc = npc;
+    constructor(agent, interactionTimerLimit = 500) {
+        this.agent = agent;
         this.interactionTimer = 0;
         this.interactionTimerLimit = interactionTimerLimit;
     }
-    interactWithOthernpcs(npcs) {
-        for (let other of npcs) {
-            if (other !== this.npc && other.isAlive && this.npc.isTargetPerceivable(other)) {
+    interactWithOtheragents(agents) {
+        for (let other of agents) {
+            if (other !== this.agent && other.isAlive && this.agent.isTargetPerceivable(other)) {
                 // Increase happiness and decrease anxiety when interacting
-                this.npc.emotions.happiness = Math.min(this.npc.emotions.happiness + 0.001, 100);
-                this.npc.emotions.anxiety = Math.max(this.npc.emotions.anxiety - 0.001, 0);
-                this.npc.signalToInteract(other);
+                this.agent.emotions.happiness = Math.min(this.agent.emotions.happiness + 0.001, 100);
+                this.agent.emotions.anxiety = Math.max(this.agent.emotions.anxiety - 0.001, 0);
+                this.agent.signalToInteract(other);
             }
         }
     }
     receiveSignal(sender) {
-        this.npc.isInteracting = true;
+        this.agent.isInteracting = true;
         this.interactionTimer = 0;
-        this.npc.stopMovement();
-        this.npc.faceTarget(sender);
+        this.agent.stopMovement();
+        this.agent.faceTarget(sender);
     }
     signalToInteract(target) {
-        if (this.npc.isTargetPerceivable(target)) {
-            target.interactionBehavior.receiveSignal(this.npc);
+        if (this.agent.isTargetPerceivable(target)) {
+            target.interactionBehavior.receiveSignal(this.agent);
         }
     }
     updateInteraction() {
-        if (this.npc.isInteracting) {
+        if (this.agent.isInteracting) {
             this.interactionTimer++;
             if (this.interactionTimer >= this.interactionTimerLimit) {
-                this.npc.isInteracting = false;
+                this.agent.isInteracting = false;
                 this.interactionTimer = 0;
-                this.npc.wanderBehavior.wander(this.npc);
+                this.agent.wanderBehavior.wander(this.agent);
             }
         }
     }

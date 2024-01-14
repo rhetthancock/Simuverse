@@ -1,32 +1,32 @@
 class FleeBehavior {
-    constructor(npc, fleeAcceleration = 0.005, fleeMaxDuration = 300) {
-        this.npc = npc;
+    constructor(agent, fleeAcceleration = 0.005, fleeMaxDuration = 300) {
+        this.agent = agent;
         this.fleeAcceleration = fleeAcceleration;
         this.fleeMaxDuration = fleeMaxDuration;
     }
     flee(threat) {
-        if (this.npc.perception.isTargetPerceivable(threat)) {
-            this.npc.lastThreatPosition = { x: threat.x, y: threat.y };
-            this.npc.fleeDuration = this.fleeMaxDuration;
+        if (this.agent.perception.isTargetPerceivable(threat)) {
+            this.agent.lastThreatPosition = { x: threat.x, y: threat.y };
+            this.agent.fleeDuration = this.fleeMaxDuration;
         }
-        if (this.npc.fleeDuration > 0) {
+        if (this.agent.fleeDuration > 0) {
             let fleeDirection = {
-                x: this.npc.x - this.npc.lastThreatPosition.x,
-                y: this.npc.y - this.npc.lastThreatPosition.y
+                x: this.agent.x - this.agent.lastThreatPosition.x,
+                y: this.agent.y - this.agent.lastThreatPosition.y
             };
-            fleeDirection = VectorUtils.setMagnitude(fleeDirection, this.npc.locomotion.maxSpeed);
-            this.npc.velocity.x = VectorUtils.lerp(this.npc.velocity.x, fleeDirection.x, this.fleeAcceleration);
-            this.npc.velocity.y = VectorUtils.lerp(this.npc.velocity.y, fleeDirection.y, this.fleeAcceleration);
-            this.npc.fleeDuration--;
+            fleeDirection = VectorUtils.setMagnitude(fleeDirection, this.agent.locomotion.maxSpeed);
+            this.agent.velocity.x = VectorUtils.lerp(this.agent.velocity.x, fleeDirection.x, this.fleeAcceleration);
+            this.agent.velocity.y = VectorUtils.lerp(this.agent.velocity.y, fleeDirection.y, this.fleeAcceleration);
+            this.agent.fleeDuration--;
         } else {
-            this.npc.lastThreatPosition = null;
+            this.agent.lastThreatPosition = null;
         }
-        this.npc.emotions.anxiety = Math.min(this.npc.emotions.anxiety + 0.01, 100);
+        this.agent.emotions.anxiety = Math.min(this.agent.emotions.anxiety + 0.01, 100);
     }
     checkBehind() {
         const rotationSpeed = 0.01;
-        let desiredAngle = Math.atan2(-this.npc.velocity.y, -this.npc.velocity.x);
-        let currentAngle = Math.atan2(this.npc.velocity.y, this.npc.velocity.x);
+        let desiredAngle = Math.atan2(-this.agent.velocity.y, -this.agent.velocity.x);
+        let currentAngle = Math.atan2(this.agent.velocity.y, this.agent.velocity.x);
         let newAngle = VectorUtils.lerp(currentAngle, desiredAngle, rotationSpeed);
         this.velocity.x = Math.cos(newAngle) * this.maxSpeed;
         this.velocity.y = Math.sin(newAngle) * this.maxSpeed;

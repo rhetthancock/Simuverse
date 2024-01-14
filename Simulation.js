@@ -13,9 +13,9 @@ class Simulation {
         this.dayLength = 60000; // Length of a day in milliseconds (e.g., 60 seconds)
         this.currentTime = 0;
         this.player = new Player(this.canvas.width / 2, this.canvas.height / 2);
-        this.npcs = [];
+        this.agents = [];
         this.stats = {
-            totalNPCs: 0,
+            totalagents: 0,
             totalResources: 0
         }
         this.scale = 1;
@@ -25,24 +25,24 @@ class Simulation {
         this.grid = new Grid(100, 100);
         for (let i = 0; i < 5; i++) {
             this.spawnResource();
-            this.spawnNPC();
+            this.spawnAgent();
         }
     }
     applyZoneEffects() {
         for (let zone of this.zones) {
-            this.npcs.forEach(npc => {
-                if (isInZone(npc, zone)) {
+            this.agents.forEach(agent => {
+                if (isInZone(agent, zone)) {
                     if (zone.effect === 'slow') {
-                        npc.speed = 0.25;
+                        agent.speed = 0.25;
                     }
                 }
             });
         }
     }
     checkInteractions() {
-        this.npcs.forEach(npc => {
-            if (isColliding(this.player, npc)) {
-                //npc.color = '#ff0000';
+        this.agents.forEach(agent => {
+            if (isColliding(this.player, agent)) {
+                //agent.color = '#ff0000';
             }
         });
     }
@@ -65,11 +65,11 @@ class Simulation {
         // Render stats
         context.font = "10px monospace";
         context.fillStyle = "#0c0";
-        context.fillText(`Total NPCs: ${this.stats.totalNPCs}`, 10, this.canvas.height - 30);
+        context.fillText(`Total agents: ${this.stats.totalagents}`, 10, this.canvas.height - 30);
         context.fillText(`Total Resources: ${this.stats.totalResources}`, 10, this.canvas.height - 15);
 
-        if (this.selectedEntity instanceof NPC) {
-            // Display NPC stats and inventory
+        if (this.selectedEntity instanceof Agent) {
+            // Display agent stats and inventory
             context.fillText(`Health: ${this.selectedEntity.metabolism.health}`, 10, 75);
             context.fillText(`Energy: ${this.selectedEntity.metabolism.energy}`, 10, 90);
             context.fillText(`Happiness: ${this.selectedEntity.emotions.happiness}`, 10, 105);
@@ -120,7 +120,7 @@ class Simulation {
     }
     loadState(stateString) {
         const state = JSON.parse(stateString);
-        this.npcs = state.npcs;
+        this.agents = state.agents;
         this.resources = state.resources;
     }
     movePlayer() {
@@ -152,9 +152,9 @@ class Simulation {
             resource.draw(context);
         }
     
-        // Draw NPCs
-        for (let npc of this.npcs) {
-            npc.draw(context);
+        // Draw agents
+        for (let agent of this.agents) {
+            agent.draw(context);
         }
     
         // Draw Player
@@ -167,7 +167,7 @@ class Simulation {
     }
     saveState() {
         const state = {
-            npcs: this.npcs,
+            agents: this.agents,
             resources: this.resources,
         };
         const stateString = JSON.stringify(state);
@@ -180,10 +180,10 @@ class Simulation {
         // Deselect previously selected entity
         this.selectedEntity = null;
 
-        // Check if an NPC or resource was clicked
-        for (let npc of this.npcs) {
-            if (x >= npc.x && x <= npc.x + npc.size && y >= npc.y && y <= npc.y + npc.size) {
-                this.selectedEntity = npc;
+        // Check if an agent or resource was clicked
+        for (let agent of this.agents) {
+            if (x >= agent.x && x <= agent.x + agent.size && y >= agent.y && y <= agent.y + agent.size) {
+                this.selectedEntity = agent;
                 break;
             }
         }
@@ -233,13 +233,13 @@ class Simulation {
         // Prevent context menu on right-click
         this.canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     }
-    spawnNPC() {
+    spawnAgent() {
         const area = this.getVisibleArea();
         const x = Math.random() * area.width + area.x;
         const y = Math.random() * area.height + area.y;
-        let npc = new NPC(x, y);
-        this.npcs.push(npc);
-        this.stats.totalNPCs++;
+        let agent = new Agent(x, y);
+        this.agents.push(agent);
+        this.stats.totalagents++;
     }
     spawnResource() {
         const area = this.getVisibleArea();
@@ -253,9 +253,9 @@ class Simulation {
     update() {
         this.movePlayer();
         this.applyZoneEffects();
-        this.npcs.forEach(npc => {
-            npc.update(this.npcs , this.resources, this.player);
-            //npc.interactWithOtherNPCs(this.npcs);
+        this.agents.forEach(agent => {
+            agent.update(this.agents , this.resources, this.player);
+            //agent.interactWithOtheragents(this.agents);
         });
         this.checkInteractions();
         this.currentTime = (this.currentTime + 1) % this.dayLength;
